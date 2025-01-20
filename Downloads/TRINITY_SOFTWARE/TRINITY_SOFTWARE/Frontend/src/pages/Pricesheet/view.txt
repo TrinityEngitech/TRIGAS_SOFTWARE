@@ -1,0 +1,566 @@
+
+import React from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+} from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
+import  { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
+
+function AddPricesheet() {
+  const navigate = useNavigate();
+
+
+  const [formData, setFormData] = useState({
+    name: "",
+    city: "",
+    effectiveDate: "",
+    effectiveTime: "",
+    remark: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+  
+
+const [supplierDetails, setSupplierDetails] = useState([]);
+
+
+  // Fetch data on component mount
+    useEffect(() => {
+      fetchCharges();
+    }, []);
+
+
+  
+  const fetchCharges = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/transportation-charges");
+      console.log("Fetched data:", response.data);
+  
+      const details = response.data.map((item) => ({
+        supplierName: item.supplierName,
+        loadingPoint: item.loadingPoint,
+        product: item.product,
+        cv: item.cv,
+        transportCharge: item.transportationCharge,
+        gst: item.gst,
+        basicPrice: "", // Initial basic price
+      }));
+      setSupplierDetails(details);
+    } catch (error) {
+      console.error("Error fetching charges:", error);
+    }
+  };
+  const handleBasicPriceChange = (index, value) => {
+    const updatedDetails = [...supplierDetails];
+    updatedDetails[index].basicPrice = value;
+    setSupplierDetails(updatedDetails);
+  };
+
+
+  const handleSave = async () => {
+    // Prepare data to match the required structure
+    const dataToSave = {
+      name: formData.name,               // e.g., "Price Sheet 17 September"
+      city: formData.city,               // e.g., "Morbi"
+      effectiveDate: formData.effectiveDate, // e.g., "2024-01-01"
+      effectiveTime: formData.effectiveTime, // e.g., "10:00:00"
+      remark: formData.remark,           // e.g., "Seasonal pricing"
+      data: supplierDetails.map(supplier => ({
+        supplierName: supplier.supplierName, // Supplier name (e.g., "IOCL")
+        productName: supplier.product,      // Product name (e.g., "PROPANE")
+        loadingPoint: supplier.loadingPoint, // Loading point (e.g., "KANDLA")
+        basicPrice: supplier.basicPrice,    // Basic price (e.g., 56590)
+        cv: supplier.cv,                    // CV value (e.g., 11100)
+        transportCharge: supplier.transportCharge, // Transport charge (e.g., 1450)
+        gst: supplier.gst                   // GST value (e.g., 10186)
+      }))
+    };
+  
+    try {
+      // Send POST request to the backend API
+      const response = await axios.post("http://localhost:3000/api/price-sheets", dataToSave);
+  
+      // Handle success
+      console.log("Pricesheet successfully saved:", response.data);
+      alert("Pricesheet successfully saved!");
+    } catch (error) {
+      // Handle error
+      console.error("Error saving pricesheet:", error);
+      alert("Failed to save pricesheet. Please try again.");
+    }
+  };
+  
+
+
+  return (
+   
+      <Box p={3}>
+        {/* Header */}
+        <Box sx={{ display: "flex" }}>
+          <Button
+            variant="text"
+            color="primary"
+            onClick={() => navigate(-1)}
+            sx={{ mb: 2 }}
+          >
+            <ArrowBack />
+          </Button>
+          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1 }}>
+            Add Pricesheet
+          </Typography>
+          
+        </Box>
+        <Box>
+          <Typography
+            variant="subtitle1"
+            sx={{ color: "grey.600", mb: 5, marginLeft: "60px" }}
+          >
+            <Link to="/" style={{ textDecoration: "none" }}>
+              Dashboard
+            </Link>{" "}
+            / Add Pricesheet
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            background: "#fff",
+            borderRadius: "20px",
+            padding: "30px 20px 30px 20px",
+          }}
+        >
+          {/* General Input Fields */}
+          <Grid container spacing={2} mb={2}>
+  <Grid item xs={4}>
+    <TextField
+      label="Name"
+      variant="outlined"
+      fullWidth
+      name="name"
+      value={formData.name}
+      onChange={handleInputChange}
+    />
+  </Grid>
+  <Grid item xs={4}>
+    <TextField
+      label="City"
+      variant="outlined"
+      fullWidth
+      name="city"
+      value={formData.city}
+      onChange={handleInputChange}
+    />
+  </Grid>
+  <Grid item xs={4}>
+    <TextField
+      type="date"
+      label="Effective From (Date)"
+      InputLabelProps={{ shrink: true }}
+      fullWidth
+      name="effectiveDate"
+      value={formData.effectiveDate}
+      onChange={handleInputChange}
+    />
+  </Grid>
+  <Grid item xs={4}>
+    <TextField
+      type="time"
+      label="Effective From (Time)"
+      InputLabelProps={{ shrink: true }}
+      fullWidth
+      name="effectiveTime"
+      value={formData.effectiveTime}
+      onChange={handleInputChange}
+    />
+  </Grid>
+  <Grid item xs={4}>
+    <TextField
+      label="Remark"
+      variant="outlined"
+      fullWidth
+      name="remark"
+      value={formData.remark}
+      onChange={handleInputChange}
+    />
+  </Grid>
+</Grid>
+
+
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              ml: 2,
+              color: "error.main",
+            }}
+          >
+            📌 Price added for each company and selected products is{" "}
+            <b>Per Ton</b>.
+          </Typography>
+
+
+          <Grid container spacing={2} mt={1}>
+  {supplierDetails.map((supplier, index) => (
+    <Grid item xs={12} md={6} key={supplier.supplierName}>
+      <Card sx={{ borderRadius: 2, border: "1px solid #ccc" }}>
+        <CardContent>
+          <Typography
+            variant="h6"
+            sx={{
+              mb: 2,
+              fontWeight: "bold",
+              padding: 1,
+              bgcolor: "primary.dark",
+              color: "primary.contrastText",
+              borderRadius: "4px",
+              display: "flex",
+              justifyContent: "space-around",
+            }}
+          >
+            <Box>{supplier.supplierName}</Box>
+            <Box>{supplier.product}</Box>
+          </Typography>
+
+          {/* Card Form Fields */}
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <TextField
+                label="Loading Point"
+                value={supplier.loadingPoint}
+                fullWidth
+                variant="outlined"
+                disabled
+              />
+            </Grid>
+
+            <Grid item xs={6}>
+              <TextField
+                label="Basic (In Rs.)"
+                variant="outlined"
+                fullWidth
+                value={supplier.basicPrice}
+                onChange={(e) => handleBasicPriceChange(index, e.target.value)}
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </Grid>
+  ))}
+</Grid>
+
+<Box mt={5} display="flex" justifyContent="center" gap={2}>
+  <Button variant="contained" color="primary" onClick={handleSave}>
+    Save
+  </Button>
+  <Button variant="outlined" color="error" onClick={() => navigate(-1)}>
+    Cancel
+  </Button>
+</Box>
+
+        </Box>
+      </Box>
+   
+  );
+}
+
+export default AddPricesheet;
+-----------------------------------------------------
+
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  CircularProgress,
+  AppBar,
+  Toolbar,
+  IconButton,
+  Divider,
+  Paper,
+} from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
+import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
+
+function AddPricesheet() {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    city: "",
+    effectiveDate: "",
+    effectiveTime: "",
+    remark: "",
+  });
+
+  const [supplierDetails, setSupplierDetails] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCharges();
+  }, []);
+
+  const fetchCharges = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/transportation-charges");
+      const details = response.data.map((item) => ({
+        supplierName: item.supplierName,
+        loadingPoint: item.loadingPoint,
+        product: item.product,
+        cv: item.cv,
+        transportCharge: item.transportationCharge,
+        gst: item.gst,
+        basicPrice: "",
+      }));
+      setSupplierDetails(details);
+    } catch (error) {
+      console.error("Error fetching charges:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleBasicPriceChange = (index, value) => {
+    const updatedDetails = [...supplierDetails];
+    updatedDetails[index].basicPrice = value;
+    setSupplierDetails(updatedDetails);
+  };
+
+  const handleSave = async () => {
+    const dataToSave = {
+      ...formData,
+      data: supplierDetails.map((supplier) => ({
+        supplierName: supplier.supplierName,
+        productName: supplier.product,
+        loadingPoint: supplier.loadingPoint,
+        basicPrice: supplier.basicPrice,
+        cv: supplier.cv,
+        transportCharge: supplier.transportCharge,
+        gst: supplier.gst,
+      })),
+    };
+
+    try {
+      const response = await axios.post("http://localhost:3000/api/price-sheets", dataToSave);
+      alert("Pricesheet successfully saved!");
+    } catch (error) {
+      console.error("Error saving pricesheet:", error);
+      alert("Failed to save pricesheet. Please try again.");
+    }
+  };
+
+  // Group suppliers by product
+  const groupedByProduct = supplierDetails.reduce((groups, supplier) => {
+    if (!groups[supplier.product]) groups[supplier.product] = [];
+    groups[supplier.product].push(supplier);
+    return groups;
+  }, {});
+
+  return (
+    <Box sx={{ backgroundColor: "#f9f9f9", minHeight: "100vh", p: 3 }}>
+      {/* AppBar */}
+      <AppBar position="static" sx={{ backgroundColor: "#1976d2" }}>
+        <Toolbar>
+          <IconButton edge="start" color="inherit" onClick={() => navigate(-1)}>
+            <ArrowBack />
+          </IconButton>
+          <Typography variant="h6">Add Pricesheet</Typography>
+        </Toolbar>
+      </AppBar>
+
+      {/* Form Section */}
+      <Box mt={4} mb={3}>
+        <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 2 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Name"
+                variant="outlined"
+                fullWidth
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="City"
+                variant="outlined"
+                fullWidth
+                name="city"
+                value={formData.city}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                type="date"
+                label="Effective Date"
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+                name="effectiveDate"
+                value={formData.effectiveDate}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                type="time"
+                label="Effective Time"
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+                name="effectiveTime"
+                value={formData.effectiveTime}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Remark"
+                variant="outlined"
+                fullWidth
+                name="remark"
+                value={formData.remark}
+                onChange={handleInputChange}
+              />
+            </Grid>
+          </Grid>
+        </Paper>
+      </Box>
+
+      {/* Product-Wise Cards */}
+      <Box>
+        {loading ? (
+          <Box textAlign="center" mt={5}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          Object.keys(groupedByProduct).map((product) => (
+            <Box key={product} mb={4}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: "bold",
+                  color: "#1976d2",
+                  mb: 2,
+                }}
+              >
+                {product}
+              </Typography>
+              <Grid container spacing={3}>
+                {groupedByProduct[product].map((supplier, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={index}>
+                    <Card
+                      sx={{
+                        borderRadius: "15px",
+                        boxShadow: "0 8px 15px rgba(0,0,0,0.1)",
+                        transition: "transform 0.3s",
+                        "&:hover": { transform: "scale(1.03)" },
+                      }}
+                    >
+                      <CardContent>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: "bold",
+                            color: "#333",
+                            mb: 1,
+                          }}
+                        >
+                          {supplier.supplierName}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: "gray", mb: 2 }}>
+                          Loading Point: {supplier.loadingPoint}
+                        </Typography>
+                        <TextField
+                          label="Basic Price (Rs.)"
+                          variant="outlined"
+                          fullWidth
+                          value={supplier.basicPrice}
+                          onChange={(e) =>
+                            handleBasicPriceChange(
+                              supplierDetails.indexOf(supplier),
+                              e.target.value
+                            )
+                          }
+                          sx={{ mb: 2 }}
+                        />
+                        <Typography variant="body2" sx={{ color: "gray" }}>
+                          <b>Transport Charge:</b> {supplier.transportCharge}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: "gray" }}>
+                          <b>CV:</b> {supplier.cv}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: "gray" }}>
+                          <b>GST:</b> {supplier.gst}
+                        </Typography>
+                      </CardContent>
+                      <CardActions>
+                        <Button size="small" sx={{ color: "#1976d2" }}>
+                          Edit
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+              <Divider sx={{ mt: 3 }} />
+            </Box>
+          ))
+        )}
+      </Box>
+
+      {/* Save Buttons */}
+      <Box textAlign="center" mt={5}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSave}
+          sx={{ px: 4, py: 1.5, fontWeight: "bold" }}
+        >
+          Save
+        </Button>
+        <Button
+          variant="outlined"
+          color="error"
+          sx={{ ml: 2, px: 4, py: 1.5, fontWeight: "bold" }}
+          onClick={() => navigate(-1)}
+        >
+          Cancel
+        </Button>
+      </Box>
+    </Box>
+  );
+}
+
+export default AddPricesheet;
+
+------------------------------------------------------------------

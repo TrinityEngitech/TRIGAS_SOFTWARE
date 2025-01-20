@@ -1,0 +1,268 @@
+const driverModel = require("../models/driverModel");
+
+// Create a new driver
+exports.createDriver = async (req, res) => {
+  try {
+    const {
+      name,
+      age,
+      driverNumber,
+      managerNumber,
+      aadharCardNumber,
+      pccNumber,
+      drivingLicense,
+      activeStatus,
+    } = req.body;
+
+    const driver = await driverModel.create({
+      name,
+      age,
+      driverNumber,
+      managerNumber,
+      aadharCardNumber,
+      pccNumber,
+      drivingLicense,
+      activeStatus,
+    });
+
+    res.status(201).json(driver);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to create driver", details: error.message });
+  }
+};
+
+// Get all drivers
+exports.getAllDrivers = async (req, res) => {
+  try {
+    const drivers = await driverModel.findAll();
+    res.status(200).json(drivers);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch drivers", details: error.message });
+  }
+};
+
+// Get driver by ID
+exports.getDriverById = async (req, res) => {
+  try {
+    const driver = await driverModel.findById(req.params.id);
+    if (driver) {
+      res.status(200).json(driver);
+    } else {
+      res.status(404).json({ error: "Driver not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch driver", details: error.message });
+  }
+};
+
+// Update a driver
+exports.updateDriver = async (req, res) => {
+  try {
+    const {
+      name,
+      age,
+      driverNumber,
+      managerNumber,
+      aadharCardNumber,
+      pccNumber,
+      drivingLicense,
+      activeStatus,
+    } = req.body;
+
+    const updatedDriver = await driverModel.update(req.params.id, {
+      name,
+      age,
+      driverNumber,
+      managerNumber,
+      aadharCardNumber,
+      pccNumber,
+      drivingLicense,
+      activeStatus,
+    });
+
+    res.status(200).json(updatedDriver);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update driver", details: error.message });
+  }
+};
+
+// Toggle active status of a driver
+exports.toggleDriverStatus = async (req, res) => {
+  try {
+    console.log("Received request to toggle status for ID:", req.params.id);
+    const driverId = req.params.id;
+
+    const driver = await driverModel.findById(driverId);
+    if (!driver) {
+      return res.status(404).json({ error: "Driver not found" });
+    }
+
+    const updatedDriver = await driverModel.update(driverId, {
+      activeStatus: !driver.activeStatus,
+    });
+
+    console.log("Driver updated:", updatedDriver);
+    res.status(200).json(updatedDriver);
+  } catch (error) {
+    console.error("Error in toggleDriverStatus:", error);
+    res.status(500).json({ error: "Failed to toggle driver status", details: error.message });
+  }
+};
+
+// Delete a driver
+exports.deleteDriver = async (req, res) => {
+  try {
+    await driverModel.delete(req.params.id);
+    res.status(200).json({ message: "Driver deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete driver", details: error.message });
+  }
+};
+
+
+
+
+-----------------routes-----------------
+const express = require("express");
+const router = express.Router();
+const driverController = require("../controllers/driverController");
+
+// CRUD routes
+router.post("/", driverController.createDriver);
+router.get("/", driverController.getAllDrivers);
+router.get("/:id", driverController.getDriverById);
+router.put("/:id", driverController.updateDriver);
+router.delete("/:id", driverController.deleteDriver);
+
+// Toggle Active Status of a Driver
+router.put("/toggle/:id", driverController.toggleDriverStatus);
+
+module.exports = router;
+
+// Routes Usage:
+
+// Create a new Driver (POST)
+// http://localhost:3000/api/drivers/
+
+// Get all Drivers (GET)
+// http://localhost:3000/api/drivers/
+
+// Get a Driver by ID (GET)
+// http://localhost:3000/api/drivers/:id
+
+// Update a Driver (PUT)
+// http://localhost:3000/api/drivers/:id
+
+// Delete a Driver (DELETE)
+// http://localhost:3000/api/drivers/:id
+
+// Toggle Active Status of a Driver (PUT)
+// http://localhost:3000/api/drivers/toggle/:id
+
+// Example Payload for Driver:
+// {
+//   "name": "Jane Smith",
+//   "age": 35,
+//   "driverNumber": "DRV123456",
+//   "managerNumber": "MGR987654",
+//   "aadharCardNumber": "1234-5678-9012",
+//   "pccNumber": "PCC001122",
+//   "drivingLicense": "DL123456789",
+//   "activeStatus": true
+// }
+
+
+-------------------------models-------------------------
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+// Create a new driver
+exports.create = async ({
+  name,
+  age,
+  driverNumber,
+  managerNumber,
+  aadharCardNumber,
+  pccNumber,
+  drivingLicense,
+  activeStatus,
+}) => {
+  return prisma.driver.create({
+    data: {
+      name,
+      age,
+      driverNumber,
+      managerNumber,
+      aadharCardNumber,
+      pccNumber,
+      drivingLicense,
+      activeStatus,
+    },
+  });
+};
+
+// Get all drivers
+exports.findAll = async () => {
+  return prisma.driver.findMany();
+};
+
+// Get driver by ID
+exports.findById = async (id) => {
+  return prisma.driver.findUnique({
+    where: { id: parseInt(id) },
+  });
+};
+
+// Update a driver
+exports.update = async (
+  id,
+  {
+    name,
+    age,
+    driverNumber,
+    managerNumber,
+    aadharCardNumber,
+    pccNumber,
+    drivingLicense,
+    activeStatus,
+  }
+) => {
+  return prisma.driver.update({
+    where: { id: parseInt(id) },
+    data: {
+      name,
+      age,
+      driverNumber,
+      managerNumber,
+      aadharCardNumber,
+      pccNumber,
+      drivingLicense,
+      activeStatus,
+    },
+  });
+};
+
+// Delete a driver
+exports.delete = async (id) => {
+  return prisma.driver.delete({
+    where: { id: parseInt(id) },
+  });
+};
+
+
+
+
+---------------------schema---------------------
+
+model Driver {
+  id                Int      @id @default(autoincrement())
+  createDate        DateTime @default(now())
+  activeStatus      Boolean
+  name              String
+  age               Int
+  driverNumber      String
+  managerNumber     String
+  aadharCardNumber  String
+  pccNumber         String
+  drivingLicense    String
+}
