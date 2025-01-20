@@ -1,0 +1,40 @@
+body {
+  color: #000;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-theme {
+  background-color: #121212;
+  /* color: #fff; */
+}
+body.dark-theme .sidebar,
+body.dark-theme .navbar {
+  background-color: #393939 !important;
+  color: #fff !important;
+}
+
+.collapsed-sidebar {
+  width: 80px;
+  overflow: hidden;
+}
+.main-content {
+  margin-left: 250px;
+  transition: margin-left 0.3s;
+}
+.collapsed-sidebar + .main-content {
+  margin-left: 80px;
+}
+
+/* Typography for Heading */
+h5 {
+  font-weight: bold;
+  color: #000; /* Default Light Theme */
+}
+
+body.dark-theme h5 {
+  color: #fff; /* Dark Theme */
+}
+
+body.dark-theme h6 {
+  color: #fff; /* Dark Theme */
+}

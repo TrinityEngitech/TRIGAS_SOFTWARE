@@ -1,0 +1,433 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  role     String
+  createdAt DateTime @default(now())
+}
+
+model TrigasProduct {
+  id              Int       @id @default(autoincrement())
+  productName     String
+  productSequence Int       // No default value
+  createDate      DateTime  @default(now())
+  activeStatus    Boolean
+  NCV             Int       // If NCV is an integer value
+  productGST      Int       // If GST is an integer value
+}
+
+
+model SupplyLocations {
+  id           Int      @id @default(autoincrement())
+  LocationName String
+  latitude     Float    // Add latitude field
+  longitude    Float    // Add longitude field
+  createDate   DateTime @default(now())
+  activeStatus Boolean
+}
+
+
+model Company {
+  id            Int      @id @default(autoincrement())
+  createDate    DateTime @default(now())
+  activeStatus  Boolean
+  companyName   String
+  GSTNumber     String
+  supplierName  String
+  ownerName     String
+  address       String
+  country       String
+  state         String
+  district      String
+  city          String
+  pinCode       String
+}
+
+model RoleManagement {
+  id            Int      @id @default(autoincrement())
+  createDate    DateTime @default(now())
+  activeStatus  Boolean
+  role          String
+  description   String
+}
+
+model TeamManagement {
+  id             Int        @id @default(autoincrement())
+  createDate     DateTime   @default(now())
+  activeStatus   Boolean
+  teamName       String
+  teamLeaderName String?    // This should be nullable, if it can be empty
+  employees      EmployeeManagement[] @relation("TeamEmployees")  // Reverse relation
+}
+
+model EmployeeManagement {
+  id              Int       @id @default(autoincrement())
+  createDate      DateTime  @default(now())
+  activeStatus    Boolean
+  empName         String
+  empEmail        String
+  empPhone        String
+  empRole         String
+  teamName        String?   // Optional field, for Team Leader
+  teamLeaderName  String?   // Optional field, for Team Member
+  teamId          Int?      // Optional, if you plan to link employee to the team directly
+  teamRole        String?   // New field to specify the employee's role in the team
+  team            TeamManagement? @relation("TeamEmployees", fields: [teamId], references: [id]) // Establishes relationship with TeamManagement
+}
+
+
+model Supplier {
+  id           Int       @id @default(autoincrement())
+  name         String
+  legalName    String
+  email        String
+  gstNumber    String
+  panNumber    String
+  activeStatus Boolean   @default(true) // New field
+  createDate   DateTime  @default(now()) // Added createDate field
+  supplierLogo String
+  products     Product[]
+  contacts     Contact[]
+  bankDetails  SupplierBankDetails[] // Relationship to SupplierBankDetails
+}
+
+model Product {
+  id           Int       @id @default(autoincrement())
+  name         String
+  code         String
+  activeStatus Boolean   @default(true) // New field
+  createDate   DateTime  @default(now()) // Added createDate field
+  supplierId   Int
+  supplier     Supplier  @relation(fields: [supplierId], references: [id])
+  locations    Location[]
+}
+
+model Location {
+  id           Int       @id @default(autoincrement())
+  location     String
+  zipCode      String
+  activeStatus Boolean   @default(true) // New field
+  createDate   DateTime  @default(now()) // Added createDate field
+  productId    Int
+  product      Product   @relation(fields: [productId], references: [id])
+}
+
+model Contact {
+  id           Int       @id @default(autoincrement())
+  name         String
+  designation  String
+  email        String
+  phoneNumber  String
+  activeStatus Boolean   @default(true) // New field
+  createDate   DateTime  @default(now()) // Added createDate field
+  supplierId   Int
+  supplier     Supplier  @relation(fields: [supplierId], references: [id])
+}
+
+model SupplierBankDetails {
+  id           Int       @id @default(autoincrement())
+  productName  String?
+  accountName  String
+  typeOfAccount String
+  bankName     String
+  branchName   String
+  ifscCode     String
+  accountNumber String
+  preNumber    String     // Extracted manually or programmatically from accountNumber
+  middleNumber String     // Extracted manually or programmatically from accountNumber
+  postNumber   String     // Customer code or manually entered value
+  activeStatus Boolean    @default(true) // New field for bank account status
+  createDate   DateTime   @default(now()) // Added createDate field
+  supplierId   Int
+  supplier     Supplier   @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+}
+
+model Driver {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  age                 Int?
+  driverNumber        String
+  managerNumber       String?
+  drivingLicense      String
+  aadharCardNumber    String
+  pccNumber           String
+  activeStatus        Boolean   @default(true)  // Default to true
+  drivingLicenseFile  String?   // Nullable field
+  aadharCardFile      String?   // Nullable field
+  pccFile             String?   // Nullable field
+  createDate          DateTime  @default(now()) // Automatically set the creation timestamp
+  updatedDate         DateTime  @updatedAt      // Automatically updated on modification
+}
+
+
+model TankerDetails { 
+  id                  Int                     @id @default(autoincrement())
+  transporterName     String?                 // Optional transporter name
+  tankerNumber        String                  @unique // Unique tanker identifier
+  licenseCapacity     Int                     // License capacity of the tanker
+  driverName          String                  // Driver associated with the tanker
+  product             String                  // Product the tanker is carrying
+  grossWeight         Float                   // Gross weight of the tanker
+  tareWeight          Float                   // Tare weight of the tanker
+  chassisNumber       String                  // Chassis number of the tanker
+  engineNumber        String                  // Engine number of the tanker
+  numberOfAxle        Int                     // Number of axles the tanker has
+  activeStatus        Boolean                 @default(true)
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  // Relation to TransporterCompanyDetails
+  companyId           Int?                    // Optional company ID
+  company             TransporterCompanyDetails? @relation(fields: [companyId], references: [id])
+
+  // Relation to TankerDocumentsDetails
+  documents           TankerDocumentsDetails[] // One-to-Many relationship
+}
+
+
+
+model TankerDocumentsDetails {  
+id                  Int                     @id @default(autoincrement())
+documentType        String?                  // Type of document (e.g., license, permit, insurance)
+validFrom           DateTime?                // Start date of document validity
+validUpto           DateTime?                // End date of document validity
+documentFile        String?                 // File path or URL of the uploaded document (optional)
+createDate          DateTime                @default(now()) // Automatically set the creation timestamp
+updatedDate         DateTime                @updatedAt      // Automatically updated on modification
+
+// Foreign key relation to TankerDetails
+tankerId            Int                     // Foreign key to TankerDetails
+tanker              TankerDetails           @relation(fields: [tankerId], references: [id]) // Relation field
+}
+
+
+
+model TransporterCompanyDetails {
+id                  Int                     @id @default(autoincrement())
+uuid                String                  @unique
+transporterName     String
+email               String                  @unique
+address1            String
+address2            String?
+state               String
+district             String
+city                String
+zipCode             String
+typeOfCompany       String
+panNumber           String                  @unique
+gstNumber           String                  @unique
+activeStatus        Boolean                 @default(true) // Default to true
+createdAt           DateTime                @default(now())
+updatedAt           DateTime                @updatedAt
+
+contacts            TransporterContactDetails[] // One-to-Many relationship
+bankDetails            TransporterBank[] // One-to-Many relationship
+ tankers             TankerDetails[]            // One-to-Many relationship with TankerDetails
+}
+
+
+model TransporterContactDetails {
+id                  Int                     @id @default(autoincrement())
+contactName         String
+role                String
+phoneNumber         String                  
+email               String                  
+
+createdAt           DateTime                @default(now())
+updatedAt           DateTime                @updatedAt
+
+companyId           Int
+company             TransporterCompanyDetails @relation(fields: [companyId], references: [id])
+}
+
+model TransporterBank {
+  id                  Int                     @id @default(autoincrement())  // Auto-incremented primary key
+  accountName         String                  // Name of the account holder
+  natureOfAccount     String                  // Nature of the account (e.g., Business, Personal)
+  bankName            String                  // Name of the bank
+  branchName          String                  // Name of the bank branch
+  ifscCode            String                  // IFSC code for the branch
+  accountNumber       String                  @unique                 // Unique account number
+  createdAt           DateTime                @default(now())          // Timestamp of when the record was created
+  updatedAt           DateTime                @updatedAt               // Timestamp of when the record was last updated
+
+  companyId           Int                      // Foreign key to the company
+  company             TransporterCompanyDetails @relation(fields: [companyId], references: [id])  // Relation field
+}
+
+
+
+
+model TransportationCharge {
+  id                   Int      @id @default(autoincrement())
+  supplierName         String
+  loadingPoint         String
+  transportationCharge Decimal   @db.Decimal(10, 2)
+  cv                   String
+  gst                  String
+  product              String
+  productSequence      Int      
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+
+model PriceSheet {
+  id             Int              @id @default(autoincrement())
+  name           String           // Price Sheet Name
+  city           String           // City Name
+  effectiveDate  DateTime         // Effective Date
+  effectiveTime  String           // Effective Time (e.g., "HH:mm:ss")
+  remark         String?          // Optional Remark
+  activeStatus   Boolean          @default(true) // Default to true
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  data           PriceSheetData[]
+
+  @@index([name, city]) // Index for quick search
+}
+
+model PriceSheetData {
+  id               Int      @id @default(autoincrement())
+  priceSheetId     Int
+  supplierName     String   // Supplier Name
+  productName      String   // Product Name
+  loadingPoint     String   // Loading Point
+  basicPrice       Decimal  @db.Decimal(10, 2) // Basic Price
+  cv               Decimal  @db.Decimal(10, 2) // CV
+  transportCharge  Decimal  @db.Decimal(10, 2) // Transport Charge
+  basicLanded      Decimal  @db.Decimal(10, 2) // Basic Landed = Basic Price + Transport Charge
+  gstPercentage    Decimal  @db.Decimal(5, 2)  // GST Percentage
+  gst              Decimal  @db.Decimal(10, 2) // GST Value
+  total            Decimal  @db.Decimal(10, 2) // Total = Basic Landed + GST
+  availableStatus  Boolean  
+  productSequence  Int      // Product Sequence
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // New field to store comparison result
+  comparison       String?  // e.g., "increased", "decreased", "no change"
+
+  priceSheet       PriceSheet @relation(fields: [priceSheetId], references: [id], onDelete: Cascade)
+
+  @@index([priceSheetId, supplierName, productName]) // Index for performance
+}
+
+model CustomerDetails {
+  id                  Int                          @id @default(autoincrement())
+  uuid                String                       @unique
+  companyName         String
+  email               String                       
+  primaryPhoneNumber  String
+  secondaryPhoneNumber String?
+  address1            String
+  address2            String?
+  state               String
+  district            String
+  city                String
+  zipcode             String
+  associatedSuppliers  Json?
+  team                String?
+  typeOfCompany       String
+  licenseNumber       String?                    
+  ourCompanies          Json?                
+  tanNumber           String?                    
+  gstNumber           String?                    
+  panNumber           String?                    
+  licenseValidTill    DateTime?
+  licenseCapacity     Float?
+  latitude            Float?
+  longitude           Float?
+  transporter         String?
+  competitorSupplier  String?
+  activeStatus        Boolean                      @default(true)
+  createdAt           DateTime                     @default(now())
+  updatedAt           DateTime                     @updatedAt
+
+  contactDetails      CustomerContactDetails[]     // One-to-Many relationship
+  generalDetails      CustomerGeneralDetails[]     // One-to-Many relationship
+  sapCodesDetails     CustomerSAPCodesDetails[]    // One-to-Many relationship
+  bankDetails         CustomerBankDetails[]        // One-to-Many relationship
+}
+
+model CustomerContactDetails {
+  id                  Int          @id @default(autoincrement())
+  customerId          Int          // Foreign key to CustomerDetails
+  contactName         String
+  phoneNumber         String
+  role                String
+  commentRemark       String?
+
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  customer            CustomerDetails @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model CustomerGeneralDetails {
+  id                       Int          @id @default(autoincrement())
+  customerId               Int          // Foreign key to CustomerDetails
+  productSegment           String
+  noOfKiln                 Int
+  lengthOfKiln             Float
+  dailyNaturalGasConsumption Float
+  dailyConsumption         Float
+  hourlyConsumption        Float
+  monthlyConsumption       Float
+  startingStock            Float
+  startingStockDateTime    DateTime
+  newPurchase              Float
+  newPurchaseDateTime      DateTime
+  updatedTotalStock        Float
+  remainingHoursOfStock    Float
+
+  createdAt                DateTime     @default(now())
+  updatedAt                DateTime     @updatedAt
+
+  customer                 CustomerDetails @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model CustomerSAPCodesDetails {
+  id              Int      @id @default(autoincrement())
+  customerId      Int      // Foreign key to CustomerDetails
+  supplierName    String
+  productName     String
+  sapCode         String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  customer        CustomerDetails @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model CustomerBankDetails {
+  id              Int      @id @default(autoincrement())
+  customerId      Int      // Foreign key to CustomerDetails
+  accountName     String
+  natureOfAccount String
+  bankName        String
+  branchName      String
+  ifscCode        String
+  accountNumber   String
+  supplierName    String   // New field for supplier name
+  supplierLogo    String
+  productName     String   // New field for product name
+  sapCode         String?   // New field for SAP code
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  customer        CustomerDetails @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+

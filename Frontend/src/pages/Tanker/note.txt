@@ -1,0 +1,477 @@
+import React, { useState } from "react";
+import {
+  TextField,
+  Grid,
+  Button,
+  Box,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+} from "@mui/material";
+import { useNavigate, Link } from "react-router-dom";
+import { ArrowBack, Add } from "@mui/icons-material";
+import axios from "axios";
+
+function AddTanker() {
+  const [document, setDocument] = useState([
+    { documentType: "", validFrom: "", validUpto: "", document: "" },
+  ]);
+
+  // Handle change for document details
+  const handledocumentChange = (index, field, value) => {
+    const updateddocument = [...document];
+    updateddocument[index][field] = value;
+    setDocument(updateddocument);
+  };
+
+  // Add a new document detail
+  const adddocument = () => {
+    setDocument([
+      ...document,
+      { documentType: "", validFrom: "", validUpto: "", document: "" },
+    ]);
+  };
+
+  // Remove a document detail
+  const removedocument = (index) => {
+    const updateddocument = document.filter((_, i) => i !== index);
+    setDocument(updateddocument);
+  };
+
+  const navigate = useNavigate();
+
+  return (
+    <Box p={3}>
+      {/* Header Section */}
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <Button variant="text" color="primary" onClick={() => navigate(-1)}>
+          <ArrowBack />
+        </Button>
+        <Typography variant="h5" sx={{ fontWeight: "bold", ml: 1 }}>
+          Add Tanker
+        </Typography>
+      </Box>
+      <Box>
+        <Typography
+          variant="subtitle1"
+          sx={{ color: "grey.600", mb: 5, marginLeft: "60px" }}
+        >
+          <Link to="/" style={{ textDecoration: "none" }}>
+            Dashboard
+          </Link>{" "}
+          / Add Tanker
+        </Typography>
+      </Box>
+      <Box
+        sx={{
+          background: "#fff",
+          borderRadius: "20px",
+          padding: "30px",
+          marginTop: "30px",
+        }}
+      >
+        <form>
+        <Typography
+              variant="h5"
+              sx={{ marginBottom: "25px", fontWeight: "500" }}
+            >
+              Tanker Details
+            </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Tanker Number"
+                // value={formData.name}
+                // onChange={handleChange}
+                name="name"
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="License Capacity(Tons)"
+                // value={formData.name}
+                // onChange={handleChange}
+                name="name"
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel>Driver</InputLabel>
+                <Select
+                  label="Number of Axle"
+                  name="ProductName"
+                  //   value={formData.supplierName}
+                  //   onChange={handleChange}
+                  required
+                >
+                  <MenuItem value="Product 1"> Driver 1</MenuItem>
+                  <MenuItem value="Product 2"> Driver 2</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel>Product</InputLabel>
+                <Select
+                  label="Product Name"
+                  name="ProductName"
+                  //   value={formData.supplierName}
+                  //   onChange={handleChange}
+                  required
+                >
+                  <MenuItem value="Product 1">Product 1</MenuItem>
+                  <MenuItem value="Product 2">Product 2</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Laden/Gross Weight"
+                // value={formData.name}
+                // onChange={handleChange}
+                name="name"
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="UnLaden/Tare Weight"
+                // value={formData.name}
+                // onChange={handleChange}
+                name="name"
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Chassis Number"
+                // value={formData.name}
+                // onChange={handleChange}
+                name="name"
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Engine Number"
+                // value={formData.name}
+                // onChange={handleChange}
+                name="name"
+                required
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth>
+                <InputLabel>Number of Axle</InputLabel>
+                <Select
+                  label="Number of Axle"
+                  name="ProductName"
+                  //   value={formData.supplierName}
+                  //   onChange={handleChange}
+                  required
+                >
+                  <MenuItem value="Product 1"> 2</MenuItem>
+                  <MenuItem value="Product 2"> 3</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
+          {/* Contact Details Section */}
+
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: "50px",
+              marginBottom: "10px",
+            }}
+          >
+            <Typography
+              variant="h5"
+              sx={{ marginBottom: "20px", fontWeight: "500" }}
+            >
+              Document Details
+            </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<Add />}
+              onClick={adddocument}
+              sx={{
+                height: "40px",
+                minWidth: "100px",
+              }}
+            >
+              Add Document
+            </Button>
+          </Box>
+
+          {document.map((tanker, index) => (
+            <Box
+              key={index}
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              sx={{ mb: 2 }} // Adds spacing between dynamically rendered fields
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  flex: 1,
+                }}
+              >
+                <FormControl fullWidth sx={{ flex: 1 }}>
+                  <InputLabel>Document Type</InputLabel>
+                  <Select
+                    value={document.documentType}
+                    onChange={(e) =>
+                      handledocumentChange(
+                        index,
+                        "documentType",
+                        e.target.value
+                      )
+                    }
+                    label="Document Type"
+                  >
+                    {/* 6 months */}
+                    <MenuItem value="PUC (Pollution Under Control)">
+                      PUC (Pollution Under Control)
+                    </MenuItem>
+                    {/* annually (1 year) */}
+                    <MenuItem value="Insurance">Insurance</MenuItem>
+                    {/*  1 year */}
+                    <MenuItem value="CLL (Carriers Legal Liability">
+                      CLL (Carriers Legal Liability)
+                    </MenuItem>
+                    {/* 15 years */}
+                    <MenuItem value="Road Tax">Road Tax</MenuItem>
+                    {/* 1 year */}
+                    <MenuItem value="Permit">Permit</MenuItem>
+                    {/* 2 years and renewed annually after that */}
+                    <MenuItem value="Fitness Certificate (Rule 62)">
+                      Fitness Certificate (Rule 62)
+                    </MenuItem>
+
+                    <MenuItem value="GPS">GPS</MenuItem>
+                    {/* 15 years */}
+                    <MenuItem value="RC Book (Registration Certificate)">
+                      RC Book (Registration Certificate)
+                    </MenuItem>
+                    {/* 1 year */}
+                    <MenuItem value="Rule 18">Rule 18</MenuItem>
+                    {/* 1 to 3 years */}
+                    <MenuItem value="Rule 9 (PESO Licence)">
+                      Rule 9 (PESO Licence)
+                    </MenuItem>
+                    {/* 1 to 5 years */}
+                    <MenuItem value="COC (Rule 13)">COC (Rule 13)</MenuItem>
+                    {/* 1-year validity */}
+                    <MenuItem value="Rule 43">Rule 43</MenuItem>                    
+                    {/* every year */}
+                    <MenuItem value="Rule 19">Rule 19</MenuItem>
+                    <MenuItem value="Mounting Drawing">
+                      Mounting Drawing
+                    </MenuItem>
+                    <MenuItem value="Fabrication Drawing">
+                      Fabrication Drawing
+                    </MenuItem>
+                    {/* 1 year */}
+                    <MenuItem value="Fire Extinguisher">
+                      Fire Extinguisher
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  label="Valid From"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  value={document.validFrom}
+                  onChange={(e) =>
+                    handledocumentChange(index, "validFrom", e.target.value)
+                  }
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Valid Upto"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  value={document.validUpto}
+                  onChange={(e) =>
+                    handledocumentChange(index, "validUpto", e.target.value)
+                  }
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  type="file"
+                  label="Document"
+                  InputLabelProps={{
+                    shrink: true, // Ensures the label remains visible when a file is selected
+                  }}
+                  onChange={(e) => {
+                    const file = e.target.files[0]; // Access the selected file
+                    handledocumentChange(index, "document", file); // Pass the file to your handler
+                  }}
+                  sx={{ flex: 1 }}
+                />
+              </Box>
+
+              {/* Remove Button */}
+              <IconButton
+                onClick={() => {
+                  removedocument(index); // Only remove if there's more than one bank entry
+                }}
+                sx={{
+                  backgroundColor: "#cf0202",
+                  borderRadius: "50%",
+                  width: "30px",
+                  height: "30px",
+                  display: document.length === 1 ? "none" : "flex", // Hide button when there's only one bank entry
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  marginLeft: "16px", // Space between the fields and the button
+                  cursor: "pointer", // Always pointer when visible
+                  "&:hover": {
+                    backgroundColor: "#cf0202",
+                  },
+                }}
+              >
+                <i className="bi bi-x"></i>
+              </IconButton>
+            </Box>
+          ))}
+        </form>
+      </Box>
+      {/* Action Buttons */}
+      <Box mt={3} display="flex" justifyContent="center" gap={2}>
+        <Button variant="contained" color="primary">
+          Save
+        </Button>
+        <Button variant="outlined" color="error">
+          Cancel
+        </Button>
+      </Box>
+    </Box>
+  );
+}
+
+export default AddTanker;
+
+
+
+-------------------------------
+
+ {document.map((tanker, index) => (
+            <Box
+              key={index}
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              sx={{ mb: 2 }} // Adds spacing between dynamically rendered fields
+            >
+              {/* Document Form */}
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  flex: 1,
+                }}
+              >
+                <FormControl fullWidth sx={{ flex: 1 }}>
+                  <InputLabel>Document Type</InputLabel>
+                  <Select
+                    value={document.documentType}
+                    onChange={(e) =>
+                      handledocumentChange(index, "documentType", e.target.value)
+                    }
+                    label="Document Type"
+                    name="documentType"
+                  >
+                    <MenuItem value="PUC">PUC (Pollution Under Control)</MenuItem>
+                    <MenuItem value="Insurance">Insurance</MenuItem>
+                    <MenuItem value="Fitness">Fitness Certificate</MenuItem>
+                    <MenuItem value="RC">RC Book (Registration Certificate)</MenuItem>
+                    {/* Add more items as needed */}
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  label="Valid From"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  value={document.validFrom}
+                  name="validFrom"
+                  onChange={(e) =>
+                    handledocumentChange(index, "validFrom", e.target.value)
+                  }
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  label="Valid Upto"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  value={document.validUpto}
+                  name="validUpto"
+                  onChange={(e) =>
+                    handledocumentChange(index, "validUpto", e.target.value)
+                  }
+                  sx={{ flex: 1 }}
+                />
+                <TextField
+                  type="file"
+                  label="Document"
+                  InputLabelProps={{ shrink: true }}
+                  name="documentFile"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    handledocumentChange(index, "documentFile", file);
+                  }}
+                  sx={{ flex: 1 }}
+                />
+              </Box>
+              <IconButton
+                onClick={() => {
+                  removedocument(index); // Only remove if there's more than one bank entry
+                }}
+                sx={{
+                  backgroundColor: "#cf0202",
+                  borderRadius: "50%",
+                  width: "30px",
+                  height: "30px",
+                  display: document.length === 1 ? "none" : "flex", // Hide button when there's only one bank entry
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  marginLeft: "16px", // Space between the fields and the button
+                  cursor: "pointer", // Always pointer when visible
+                  "&:hover": {
+                    backgroundColor: "#cf0202",
+                  },
+                }}
+              >
+                <i className="bi bi-x"></i>
+              </IconButton>
+            </Box>
+          ))}
