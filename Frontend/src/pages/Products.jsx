@@ -25,6 +25,9 @@ import { ArrowBack } from "@mui/icons-material";
 import { LuArrowDownUp } from "react-icons/lu";
 import AnimatedLogoLoader from "../component/AnimatedLogoLoader";
 
+import axiosInstance from "../Authentication/axiosConfig"; // Import the custom Axios instance
+
+
 function Products() {
   // State for products data
   const [products, setProducts] = useState([]);
@@ -50,7 +53,8 @@ function Products() {
   // Fetch products from the API
   useEffect(() => {
     axios
-      .get("http://localhost:3000/api/products/")
+      // .get("http://localhost:3000/api/products/")
+      axiosInstance.get("/products/")
       .then((response) => {
         console.log(response.data); // Check the structure of the response data
         if (Array.isArray(response.data)) {

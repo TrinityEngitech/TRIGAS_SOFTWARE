@@ -1,46 +1,41 @@
 import React, { useState, useEffect } from "react";
 import {
-  TextField,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
   Button,
-  Grid,
   Box,
   Typography,
+  Grid,
 } from "@mui/material";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useParams } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
+import axiosInstance from "../../Authentication/axiosConfig";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
 
 function ViewCompany() {
   const navigate = useNavigate();
-  const [companies, setCompanies] = useState([]);
+  const { id } = useParams();
+  const [company, setCompany] = useState(null); // Store a single company object
   const [loading, setLoading] = useState(true); // Track loading state
 
-  // Fetch companies from the API
+  // Fetch company from the API
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/companies/")
+    axiosInstance
+      .get(`/companies/${id}`)
       .then((response) => {
-        if (Array.isArray(response.data)) {
-          setCompanies(response.data); // Set companies if the response is an array
+        console.log("API Response:", response.data); // Log the response to inspect it
+        if (response.data) {
+          setCompany(response.data); // Set the company object if the response is valid
         } else {
-          console.error("Received data is not an array");
+          console.error("Received data is not a valid company object.");
         }
       })
       .catch((error) => {
-        console.error("Error fetching companies:", error);
+        console.error("Error fetching company:", error);
       })
       .finally(() => {
         setLoading(false); // Stop loading when API call completes
       });
-  }, []);
-
-  // Use the first company in the list for display
-  const company = companies.length > 0 ? companies[0] : null;
+  }, [id]);
 
   return (
     <Box p={3} sx={{ height: "100vh" }}>

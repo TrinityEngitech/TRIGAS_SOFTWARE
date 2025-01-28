@@ -14,6 +14,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 import { styled } from "@mui/material/styles";
 import _ from "lodash"; // Import lodash for easy grouping
+import axiosInstance from "../../Authentication/axiosConfig";
 
 
 const IOSSwitch = styled("label")`
@@ -97,7 +98,7 @@ function EditPricesheet() {
   // Fetch the existing price sheet data for the given ID
   const fetchPricesheet = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/price-sheets/${id}`);
+      const response = await axiosInstance.get(`/price-sheets/${id}`);
       const data = response.data;
 
       // console.log(data);
@@ -254,7 +255,7 @@ function EditPricesheet() {
     console.log("Data to save:", dataToSave);
   
     try {
-      const response = await axios.put(`http://localhost:3000/api/price-sheets/${id}`, dataToSave);
+      const response = await axiosInstance.put(`/price-sheets/${id}`, dataToSave);
       alert("Pricesheet successfully updated!");
       console.log(response.data);
       navigate("/pricesheet"); // Redirect to another page (e.g., dashboard or price sheet list) after save

@@ -19,6 +19,7 @@ import { useNavigate, Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { ArrowBack,Delete } from "@mui/icons-material";
 import { FaEye } from "react-icons/fa";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 
 const TranspoterDetalis = () => {
@@ -39,7 +40,7 @@ const TranspoterDetalis = () => {
     // Fetch data from API
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/transporters/transporterId/${id}`); // Replace with your API endpoint
+        const response = await axiosInstance.get(`/transporters/transporterId/${id}`); // Replace with your API endpoint
         setData(response.data); // Set the fetched data
         console.log(response.data);
         
@@ -72,7 +73,7 @@ console.log(tankerList);
       const confirmDelete = window.confirm("Are you sure you want to delete this tanker?");
       if (!confirmDelete) return;
   
-      await axios.delete(`http://localhost:3000/api/transporters/deleteTanker/${tankerId}`);
+      await axiosInstance.delete(`/transporters/deleteTanker/${tankerId}`);
   
       alert("Tanker deleted successfully!");
       // Remove the deleted tanker from the state
@@ -89,7 +90,7 @@ console.log(tankerList);
 
   const handledocumentDelete = async (id) => {
     try {
-      const response = await axios.delete(`http://localhost:3000/api/tankers/documents/${id}`);
+      const response = await axiosInstance.delete(`/tankers/documents/${id}`);
       if (response.status === 200) {
         alert("Document deleted successfully");
         // Update your state to remove the deleted document

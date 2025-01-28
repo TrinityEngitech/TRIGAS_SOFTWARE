@@ -18,13 +18,14 @@ import {
   AccordionDetails,
   IconButton,
 } from "@mui/material";
-import axios from "axios";
+// import axios from "axios";
 
 import { ArrowBack } from "@mui/icons-material";
 import { useNavigate, Link, useParams } from "react-router-dom";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import axiosInstance from "../../Authentication/axiosConfig";
 // import { useNavigate } from "react-router-dom";
 
 function ViewCustomer() {
@@ -42,9 +43,7 @@ function ViewCustomer() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/customers/${id}`
-        );
+        const response = await axiosInstance.get(`/customers/${id}`);
         setData(response.data);
         console.log(response.data);
         // Update the state with the fetched data
@@ -149,13 +148,23 @@ function ViewCustomer() {
           <Grid item xs={4}>
             <b>Zip Code:</b> {data.zipcode}
           </Grid>
-          <Grid item xs={4}>
-            {/* <b>Associated Supplier:</b> {data.associatedSuppliers} */}
-            <b>Associated Supplier:</b>
+          {/* <Grid item xs={4}>
+  <b>Associated Supplier:</b>{" "}
+  {data.associatedSuppliers && Array.isArray(data.associatedSuppliers)
+    ? data.associatedSuppliers.join(", ")
+    : "No Suppliers Available"}
+</Grid> */}
+          {/* <Grid item xs={4}>
+            <b>Associated Supplier:</b>{" "}
             {data.associatedSuppliers
               ? JSON.parse(data.associatedSuppliers).join(", ")
               : "No Suppliers Available"}
+          </Grid> */}
+          <Grid item xs={4}>
+            <b>Associated Supplier:</b>
+            {data.associatedSuppliers}
           </Grid>
+
           <Grid item xs={4}>
             <b>Team:</b> {data.team}
           </Grid>
@@ -165,12 +174,30 @@ function ViewCustomer() {
           <Grid item xs={4}>
             <b>License number:</b> {data.licenseNumber}
           </Grid>
-          <Grid item xs={4}>
+
+          {/* <Grid item xs={4}>
             <b>Our Company:</b>{" "}
             {data.ourCompanies
-              ? JSON.parse(data.ourCompanies).join(", ")
-              : "No Company Available"}
+              ? JSON.parse(data.ourCompanies)
+                  .map((company) => {
+                    const match = company.match(/^(.*?)\s*\((.*?)\)$/);
+                    if (match) {
+                      const initials = match[1] // Extracts "HARIKRISHNA COMMERCIAL BHARAT GAS AGENCY"
+                        .split(" ") // Splits into words
+                        .map((word) => word.charAt(0)) // Gets the first letter of each word
+                        .join(""); // Joins them together
+                      return `${initials} (${match[2]})`; // HCBGA (BPCL)
+                    }
+                    return company; // Fallback in case format is different
+                  })
+                  .join(", ")
+              : "No Companies Available"}
+          </Grid> */}
+          <Grid item xs={4}>
+            <b>BA(Business Associated):</b>
+            {data.ourCompanies}
           </Grid>
+
           <Grid item xs={4}>
             <b>TAN Number:</b> {data.tanNumber}
           </Grid>
@@ -199,7 +226,8 @@ function ViewCustomer() {
             <b>Competitor:</b> {data.competitorSupplier}
           </Grid>
           <Grid item xs={4}>
-            <b>Status:</b> Active
+            <b>Status:</b>
+            {data.activeStatus ? "Active" : "Inactive"}
           </Grid>
         </Grid>
       </Box>

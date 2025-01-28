@@ -4,6 +4,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import axios from "axios";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function EditDriver() {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ function EditDriver() {
     managerNumber: "",
     aadharCardNumber: "",
     pccNumber: "",
+    driverAdditionalNumber:"",
+    driverAdditionalName:"",
     drivingLicense: "",
   });
 
@@ -38,8 +41,8 @@ function EditDriver() {
       setIsEditing(true);
       const fetchDriverData = async () => {
         try {
-          const response = await axios.get(
-            `http://localhost:3000/api/drivers/${id}`
+          const response = await axiosInstance.get(
+            `/drivers/${id}`
           );
           setFormData({
             name: response.data.name,
@@ -47,11 +50,15 @@ function EditDriver() {
             driverNumber: response.data.driverNumber,
             managerNumber: response.data.managerNumber,
             aadharCardNumber: response.data.aadharCardNumber,
+            driverAdditionalNumber:response.data.driverAdditionalNumber,
+            driverAdditionalName:response.data.driverAdditionalName,
             pccNumber: response.data.pccNumber,
             drivingLicense: response.data.drivingLicense,
           });
         } catch (err) {
           setError("Failed to fetch driver details.");
+          console.log(err);
+          
         } finally {
           setLoading(false); // Hide loader
         }
@@ -98,6 +105,8 @@ function EditDriver() {
   
       // Handle age and managerNumber (send null if empty)
       formDataToSend.append("age", formData.age || "");
+      formDataToSend.append("driverAdditionalNumber", formData.driverAdditionalNumber || "");
+      formDataToSend.append("driverAdditionalName", formData.driverAdditionalName || "");
       formDataToSend.append("managerNumber", formData.managerNumber || "");
   
       // Handle files
@@ -208,6 +217,26 @@ function EditDriver() {
                 onChange={handleChange}
                 name="managerNumber"
                 placeholder="Enter manager number or leave blank"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Additional Number"
+                value={formData.driverAdditionalNumber || ""}
+                name="driverAdditionalNumber"
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Additional Number Person Name"
+                value={formData.driverAdditionalName || ""}
+                name="driverAdditionalName"
+                onChange={handleChange}
+                required
               />
             </Grid>
             <Grid item xs={12} sm={6}>

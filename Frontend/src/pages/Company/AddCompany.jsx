@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { useNavigate,Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
-
+import axiosInstance from "../../Authentication/axiosConfig";
 import axios from "axios";
 
 function AddCompany() {
@@ -20,7 +20,7 @@ function AddCompany() {
   const [suppliers, setSuppliers] = useState([]);
   useEffect(() => {
     const fetchSuppliers = async () => {
-      const response = await axios.get("http://localhost:3000/api/supplier"); // Update this with the actual API endpoint
+      const response = await axiosInstance.get("/supplier"); // Update this with the actual API endpoint
       console.log(response.data || []);
 
       setSuppliers(response.data); // Set the data to state
@@ -76,8 +76,8 @@ function AddCompany() {
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/companies/",
+      const response = await axiosInstance.post(
+        "/companies/",
         dataToSend
       );
       console.log("Response:", response.data);

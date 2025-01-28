@@ -21,6 +21,7 @@ import { ArrowBack } from "@mui/icons-material";
 import { LuArrowDownUp } from "react-icons/lu";
 import { FaEye } from "react-icons/fa";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function Driver() {
   const [driver, setDriver] = useState([]);
@@ -33,8 +34,8 @@ function Driver() {
 
   // Fetch companies from the API
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/drivers/")
+    axiosInstance
+      .get("/drivers/")
       .then((response) => {
         console.log(response.data); // Check the structure of the response data
         if (Array.isArray(response.data)) {
@@ -51,8 +52,8 @@ function Driver() {
   // Handle toggle change (active status)
   const handleToggleActive = async (driverId, currentStatus) => {
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/drivers/toggle/${driverId}`
+      const response = await axiosInstance.put(
+        `/drivers/toggle/${driverId}`
       );
       console.log("driver status toggled:", response.data);
 

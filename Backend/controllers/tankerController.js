@@ -143,6 +143,7 @@ const getAllTankers = async (req, res) => {
  * @param {Request} req
  * @param {Response} res
  */
+
 const getTankerById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -162,6 +163,33 @@ const getTankerById = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while fetching data' });
   }
 };
+
+
+const toggleTankerStatus = async (req, res) => {
+  try {
+    const tankerId = parseInt(req.params.id);
+
+    const tanker = await prismaClient.tankerDetails.findUnique({
+      where: { id: tankerId },
+    });
+    if (!tanker) {
+      return res.status(404).json({ error: "tanker not found" });
+    }
+
+    // Toggle active status
+    const updatedTanker = await prismaClient.tankerDetails.update({
+      where: { id: tankerId },
+      data: {
+        activeStatus: !tanker.activeStatus,
+      },
+    });
+
+    res.status(200).json(updatedTanker);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to toggle tanker status", details: error.message });
+  }
+};
+
 
 // /**
 //  * Update tanker details by ID.
@@ -341,28 +369,6 @@ const getTankerById = async (req, res) => {
 //     });
 //   }
 // };
-
-exports.toggleTankerStatus = async (req, res) => {
-  try {
-    console.log('Received request to toggle status for ID:', req.params.id);
-    const tankerId = req.params.id;
-
-    const tanker = await tankerDetails.findById(tankerId);
-    if (!tanker) {
-      return res.status(404).json({ error: "tanker not found" });
-    }
-
-    const updatedTanker = await tankerDetails.update(tankerId, {
-      activeStatus: !tanker.activeStatus,
-    });
-
-    console.log('tanker updated:', updatedTanker);
-    res.status(200).json(updatedTanker);
-  } catch (error) {
-    console.error('Error in toggleTankerStatus:', error);
-    res.status(500).json({ error: "Failed to toggle tanker status", details: error.message });
-  }
-};
 
 
 const updateTankerDetails = async (req, res) => {
@@ -573,6 +579,7 @@ module.exports = {
   updateTankerDetails,
   deleteTankerDetails,
   documentDelete,
+  toggleTankerStatus,
 };
 
 

@@ -10,6 +10,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 import { ArrowBack } from "@mui/icons-material";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function EditRole() {
   const { id } = useParams(); 
@@ -27,7 +28,7 @@ function EditRole() {
     const fetchRoleData = async () => {
       try {
         setLoading(true); // Show loader
-        const response = await axios.get(`http://localhost:3000/api/roles/${id}`);
+        const response = await axiosInstance.get(`/roles/${id}`);
         setFormData(response.data); // Populate the form with the fetched data
       } catch (error) {
         console.error("Error fetching role data:", error);
@@ -54,8 +55,8 @@ function EditRole() {
     e.preventDefault();
     setLoading(true); // Show loader during submission
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/roles/${id}`,
+      const response = await axiosInstance.put(
+        `/roles/${id}`,
         formData
       );
       console.log("Role updated successfully:", response.data);

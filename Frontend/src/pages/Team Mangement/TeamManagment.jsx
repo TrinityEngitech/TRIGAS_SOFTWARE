@@ -25,6 +25,7 @@ import { ArrowBack } from "@mui/icons-material";
 import { LuArrowDownUp } from "react-icons/lu";
 import { FaEye } from "react-icons/fa";
 import AnimatedLogoLoader from '../../component/AnimatedLogoLoader';
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function TeamManagement() {
   const [teams, setTeams] = useState([]);
@@ -45,8 +46,8 @@ function TeamManagement() {
 
   // Fetch products from the API
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/teams")
+    axiosInstance
+      .get("/teams")
       .then((response) => {
         console.log(response.data); // Check the structure of the response data
         if (Array.isArray(response.data)) {
@@ -66,8 +67,8 @@ function TeamManagement() {
   const handleToggleActive = async (teamId, currentStatus) => {
     try {
       // Toggle the status on the server
-      const response = await axios.patch(
-        `http://localhost:3000/api/teams/${teamId}/toggle`
+      const response = await axiosInstance.patch(
+        `/teams/${teamId}/toggle`
       );
       console.log("team status toggled:", response.data);
 

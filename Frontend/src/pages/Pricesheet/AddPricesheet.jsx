@@ -14,6 +14,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { styled } from "@mui/material/styles";
 import _ from "lodash"; // Import lodash for easy grouping
+import axiosInstance from "../../Authentication/axiosConfig";
 
 const IOSSwitch = styled("label")`
   position: relative;
@@ -95,8 +96,8 @@ function AddPricesheet() {
 
   const fetchCharges = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:3000/api/transportation-charges"
+      const response = await axiosInstance.get(
+        "/transportation-charges"
       );
       const details = response.data.map((item) => ({
         supplierName: item.supplierName,
@@ -170,8 +171,8 @@ function AddPricesheet() {
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/price-sheets",
+      const response = await axiosInstance.post(
+        "/price-sheets",
         dataToSave
       );
       alert("Pricesheet successfully saved!");

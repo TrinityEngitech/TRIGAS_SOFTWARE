@@ -35,44 +35,44 @@ function Commission() {
 
   const navigate = useNavigate();
 
-  // Fetch companies from the API
-  useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/companies/")
-      // .get("http://localhost:3000/api/companies/")
-      .then((response) => {
-        console.log(response.data); // Check the structure of the response data
-        if (Array.isArray(response.data)) {
-          setCompanies(response.data); // Set companies if the response is an array
-        } else {
-          console.error("Received data is not an array");
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching companies:", error);
-      });
-  }, []);
+  // // Fetch companies from the API
+  // useEffect(() => {
+  //   axios
+  //     .get("http://localhost:3000/api/companies/")
+  //     // .get("http://localhost:3000/api/companies/")
+  //     .then((response) => {
+  //       console.log(response.data); // Check the structure of the response data
+  //       if (Array.isArray(response.data)) {
+  //         setCompanies(response.data); // Set companies if the response is an array
+  //       } else {
+  //         console.error("Received data is not an array");
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching companies:", error);
+  //     });
+  // }, []);
 
-  // Handle toggle change (active status)
-  const handleToggleActive = async (companieId, currentStatus) => {
-    try {
-      const response = await axios.put(
-        `http://localhost:3000/api/companies/toggle/${companieId}`
-      );
-      console.log("companie status toggled:", response.data);
+  // // Handle toggle change (active status)
+  // const handleToggleActive = async (companieId, currentStatus) => {
+  //   try {
+  //     const response = await axios.put(
+  //       `http://localhost:3000/api/companies/toggle/${companieId}`
+  //     );
+  //     console.log("companie status toggled:", response.data);
 
-      // Update the state directly
-      setCompanies((prevcompanies) =>
-        prevcompanies.map((companie) =>
-          companie.id === companieId
-            ? { ...companie, activeStatus: !currentStatus } // Toggle status in the UI
-            : companie
-        )
-      );
-    } catch (error) {
-      console.error("Error toggling companie status:", error);
-    }
-  };
+  //     // Update the state directly
+  //     setCompanies((prevcompanies) =>
+  //       prevcompanies.map((companie) =>
+  //         companie.id === companieId
+  //           ? { ...companie, activeStatus: !currentStatus } // Toggle status in the UI
+  //           : companie
+  //       )
+  //     );
+  //   } catch (error) {
+  //     console.error("Error toggling companie status:", error);
+  //   }
+  // };
 
   // filter/search/pagination/datetime format
   // Sorting states

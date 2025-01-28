@@ -20,6 +20,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import { LuArrowDownUp } from "react-icons/lu";
 import { FaEye } from "react-icons/fa";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function Tanker() {
   const [tanker, setTanker] = useState([]);
@@ -78,8 +79,8 @@ function Tanker() {
   
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/tankers/")
+    axiosInstance
+      .get("/tankers/")
       .then((response) => {
         console.log("Full response:", response); // Log the full response to check its structure
 
@@ -99,8 +100,8 @@ function Tanker() {
 
   const handleToggleActive = async (tankerId, currentStatus) => {
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/tanker/toggle/${tankerId}`
+      const response = await axiosInstance.put(
+        `/tankers/toggle/${tankerId}`
       );
       console.log("Tanker status toggled:", response.data);
       setTanker((prevTanker) =>
@@ -330,25 +331,6 @@ function Tanker() {
                     </Link>
                   </TableCell>
                   {/* Display Documents */}
-                  {/* <TableCell align="center">
-                    {tanker.documents && tanker.documents.length > 0 ? (
-                      tanker.documents.map((doc, index) => (
-                        <Box key={index}>
-                          <Typography variant="body2">{doc.documentType}</Typography>
-                          <a
-                            href={`http://localhost:3000/uploads/${doc.documentFile}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            download
-                          >
-                            {doc.documentFile}
-                          </a>
-                        </Box>
-                      ))
-                    ) : (
-                      <Typography>No Documents</Typography>
-                    )}
-                  </TableCell> */}
                 </TableRow>
               ))}
             </TableBody>

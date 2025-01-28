@@ -17,6 +17,7 @@ import { useNavigate, Link, useParams } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import axios from "axios";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 const EditSupplier = () => {
   const navigate = useNavigate();
@@ -80,9 +81,9 @@ const EditSupplier = () => {
       try {
         setLoading(true); 
         const [productsResponse, locationsResponse] = await Promise.all([
-          axios.get("http://localhost:3000/api/products/"),
-          axios.get(
-            "http://localhost:3000/api/SupplyLocations/supply-locations"
+          axiosInstance.get("/products/"),
+          axiosInstance.get(
+            "/SupplyLocations/supply-locations"
           ),
         ]);
 
@@ -258,8 +259,8 @@ const EditSupplier = () => {
     }
 
     // Fetch supplier data when the component loads
-    axios
-      .get(`http://localhost:3000/api/supplier/${id}`)
+    axiosInstance
+      .get(`/supplier/${id}`)
       .then((response) => {
         const data = response.data;
 
@@ -428,8 +429,8 @@ const EditSupplier = () => {
         const supplierId = id; // Replace `id` with the actual supplier ID variable
 
         // Send a PUT request to update the supplier
-        const response = await axios.put(
-            `http://localhost:3000/api/supplier/${supplierId}`, // Backend URL for updating
+        const response = await axiosInstance.put(
+            `/supplier/${supplierId}`, // Backend URL for updating
             formData,
             {
                 headers: {
@@ -989,18 +990,7 @@ const EditSupplier = () => {
               </Grid>
 
               {/* Buttons */}
-              <Grid item xs={12} sm={4} sx={{ display: "flex" }}>
-                <Button
-                  variant="outlined"
-                  color="success"
-                  sx={{ marginRight: "5px" }}
-                >
-                  Your Customer Code
-                </Button>
-                <Button variant="outlined" color="success">
-                  <strong>058520</strong>
-                </Button>
-              </Grid>
+              
             </Grid>
 
             {/* Remove Button */}

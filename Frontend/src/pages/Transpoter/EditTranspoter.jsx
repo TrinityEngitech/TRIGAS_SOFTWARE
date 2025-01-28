@@ -31,6 +31,7 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import DescriptionIcon from "@mui/icons-material/Description";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 const EditTranspoter = () => {
   const navigate = useNavigate();
@@ -165,8 +166,8 @@ const EditTranspoter = () => {
     const fetchData = async () => {
       try {
         const [productsResponse, driversResponse] = await Promise.all([
-          axios.get("http://localhost:3000/api/products/"),
-          axios.get("http://localhost:3000/api/drivers/"),
+          axiosInstance.get("/products/"),
+          axiosInstance.get("/drivers/"),
         ]);
 
         console.log(driversResponse);
@@ -211,8 +212,8 @@ const EditTranspoter = () => {
     // Fetch data from API
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/transporters/transporterId/${id}`
+        const response = await axiosInstance.get(
+          `/transporters/transporterId/${id}`
         ); // Replace with your API endpoint
         setData(response.data); // Set the fetched data
         console.log(response.data);
@@ -276,8 +277,8 @@ const EditTranspoter = () => {
     e.preventDefault();
     try {
       // Update the company details via PUT request
-      const response = await axios.put(
-        `http://localhost:3000/api/transporters/transporterCompany/${id}`,
+      const response = await axiosInstance.put(
+        `/transporters/transporterCompany/${id}`,
         data
       );
       console.log("Company updated:", response.data);
@@ -320,8 +321,8 @@ const EditTranspoter = () => {
     console.log("Payload being sent to backend:", payload);
 
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/transporters/transporterCompany/${id}/contact`,
+      const response = await axiosInstance.put(
+        `/transporters/transporterCompany/${id}/contact`,
         payload
       );
       console.log("Contacts updated successfully:", response.data);
@@ -383,8 +384,8 @@ const EditTranspoter = () => {
 
     try {
       // Send the payload to the backend via POST request
-      const response = await axios.post(
-        "http://localhost:3000/api/transporters/saveTankerDetails",
+      const response = await axiosInstance.post(
+        "/transporters/saveTankerDetails",
         payload
       );
 
@@ -426,8 +427,8 @@ const EditTranspoter = () => {
       );
       if (!confirmDelete) return;
   
-      const response = await axios.delete(
-        `http://localhost:3000/api/transporters/deleteTanker/${tankerId}`
+      const response = await axiosInstance.delete(
+        `/transporters/deleteTanker/${tankerId}`
       );
   
       if (response.status === 200) {
@@ -665,8 +666,8 @@ const EditTranspoter = () => {
 
   const handledocumentDelete = async (id) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:3000/api/tankers/documents/${id}`
+      const response = await axiosInstance.delete(
+        `/tankers/documents/${id}`
       );
 
       if (response.status === 200) {
@@ -720,8 +721,8 @@ const EditTranspoter = () => {
     console.log("Payload being sent to backend:", payload);
 
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/transporters/transporterCompany/${id}/bank`,
+      const response = await axiosInstance.put(
+        `/transporters/transporterCompany/${id}/bank`,
         payload
       );
       console.log("Bank details updated successfully:", response.data);

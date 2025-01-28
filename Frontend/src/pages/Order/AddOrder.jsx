@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TextField,
   Select,
@@ -13,69 +13,134 @@ import {
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 
-import axios from "axios";
+import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig"; // Import the custom Axios instance
 
 function AddOrder() {
+ 
+  const [customers, setCustomers] = useState([]);
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      const response = await axiosInstance.get("/customers/");
+      console.log(response.data || []);
+
+      setCustomers(response.data); // Set the data to state
+    };
+
+    fetchSuppliers(); // Call the function to fetch data
+  }, []);
+  console.log("customers", customers);
+
+  const [supplierLocation, setSupplierLocation] = useState([]);
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      const response = await axiosInstance.get(
+        "/SupplyLocations/supply-locations"
+      );
+      console.log(response.data || []);
+
+      setSupplierLocation(response.data); // Set the data to state
+    };
+
+    fetchSuppliers(); // Call the function to fetch data
+  }, []);
+  console.log("supplierLocation", supplierLocation);
+
+  const [product, setProduct] = useState([]);
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      const response = await axiosInstance.get("/products/");
+      console.log(response.data || []);
+
+      setProduct(response.data); // Set the data to state
+    };
+
+    fetchSuppliers(); // Call the function to fetch data
+  }, []);
+  console.log("product", product);
+
+ 
+
+  useEffect(() => {
+    // Get user data from localStorage
+    const userData = JSON.parse(localStorage.getItem("user"));
+    if (userData && userData.name && userData.role) {
+      // Combine name and role in the desired format
+      const formattedUser = `${userData.name} (${userData.role})`;
+
+      // Set the formatted name and role in the form data
+      setFormData((prev) => ({
+        ...prev,
+        orderCreatedBy: formattedUser,
+      }));
+    }
+  }, []);
+
   const [formData, setFormData] = useState({
-    companyName: "",
+    customerId: "",
+    customerName: "",
     supplierName: "",
-    address: "",
-    gstNumber: "",
-    ownerName: "",
-    country: "",
-    state: "",
-    district: "",
-    city: "",
-    pinCode: "",
+    supplyLoadingPoint: "",
+    productName: "",
+    productQuantity: "",
+    teamName: "",
+    orderCreatedBy: "",
+    orderDateTime: "",
   });
-
-  console.log(formData);
-
-  const [loading, setLoading] = useState(false); // For button state
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const dataToSend = {
-      companyName: formData.companyName,
-      GSTNumber: formData.gstNumber,
-      supplierName: formData.supplierName,
-      ownerName: formData.ownerName,
-      address: formData.address,
-      country: formData.country,
-      state: formData.state,
-      district: formData.district,
-      city: formData.city,
-      pinCode: formData.pinCode,
-      activeStatus: true, // Default value
-    };
-
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/api/order/",
-        dataToSend
+    // Check if the field being updated is 'customerName'
+    if (name === "customerName") {
+      const selectedCustomer = customers.find(
+        (customer) => customer.companyName === value
       );
-      console.log("Response:", response.data);
-      alert("Order added successfully!");
-      navigate("/order");
-    } catch (error) {
-      console.error("Error adding Order:", error);
-      alert("Failed to add Order. Please try again.");
-    } finally {
-      setLoading(false);
+
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value, // Update customerName
+        customerId: selectedCustomer ? selectedCustomer.id : "", // Set customerId
+        supplierName: "", // Reset supplierName if customer changes
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value, // Update other fields
+      }));
     }
   };
 
+  // Get associated suppliers for the selected customer
+  const selectedCustomer = customers.find(
+    (customer) => customer.companyName === formData.customerName
+  );
+
+  
   const navigate = useNavigate();
+  
+  const [loading, setLoading] = useState(false); // For button state
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Submitted Data:", formData);
+    setLoading(true); // Show loader
+
+    try {
+      const response = await axiosInstance.post("/orders/create", formData);
+      console.log("Response:", response.data);
+
+      setLoading(false); // Hide loader
+      navigate("/order"); // Navigate to order page
+    } catch (error) {
+      console.error("Error:", error);
+      setLoading(false); // Hide loader on error
+      // Handle the error, maybe show an error message to the user
+    }
+  };
 
   return (
     <Box p={3}>
@@ -111,36 +176,52 @@ function AddOrder() {
           marginTop: "30px",
         }}
       >
+        {loading ? (
+        <AnimatedLogoLoader /> // Display loader when loading
+      ) : (
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
+             
               <FormControl fullWidth>
                 <InputLabel>Customer</InputLabel>
                 <Select
-                  label="Supplier Name"
-                  name=""
-                  value={formData.supplierName}
+                  label="Customer"
+                  name="customerName"
+                  value={formData.customerName}
                   onChange={handleChange}
                   required
                 >
-                  <MenuItem value="Customer 1">Customer 1</MenuItem>
-                  <MenuItem value="Customer 1">Customer 1</MenuItem>
+                  {customers.map((customer) => (
+                    <MenuItem key={customer.id} value={customer.companyName}>
+                      {customer.companyName}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
+
+              {/* companyName */}
             </Grid>
 
             <Grid item xs={12} sm={6}>
+            
               <FormControl fullWidth>
                 <InputLabel>Supplier</InputLabel>
                 <Select
                   label="Supplier"
-                  name=""
+                  name="supplierName"
                   value={formData.supplierName}
                   onChange={handleChange}
                   required
+                  disabled={!formData.customerName} // Disable if no customer is selected
                 >
-                  <MenuItem value="Supplier 1">Supplier 1</MenuItem>
-                  <MenuItem value="Supplier 2">Supplier 2</MenuItem>
+                  {selectedCustomer?.associatedSuppliers.map(
+                    (supplier, index) => (
+                      <MenuItem key={index} value={supplier}>
+                        {supplier}
+                      </MenuItem>
+                    )
+                  )}
                 </Select>
               </FormControl>
             </Grid>
@@ -150,19 +231,23 @@ function AddOrder() {
                 <InputLabel>Supply Location</InputLabel>
                 <Select
                   label="Supply Location"
-                  name=""
-                  value={formData.supplierName}
+                  name="supplyLoadingPoint"
+                  value={formData.supplyLoadingPoint}
                   onChange={handleChange}
                   required
                 >
-                  <MenuItem value="Supply Location 1">
-                    Supply Location 1
-                  </MenuItem>
-                  <MenuItem value="Supply Location 1">
-                    Supply Location 1
-                  </MenuItem>
+                  {supplierLocation.map((supplierLocation) => (
+                    <MenuItem
+                      key={supplierLocation.id}
+                      value={supplierLocation.LocationName}
+                    >
+                      {supplierLocation.LocationName}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
+
+              {/* LocationName */}
             </Grid>
 
             <Grid item xs={12} sm={6}>
@@ -170,56 +255,54 @@ function AddOrder() {
                 <InputLabel>Product</InputLabel>
                 <Select
                   label="Product"
-                  name=""
-                  value={formData.supplierName}
+                  name="productName"
+                  value={formData.productName}
                   onChange={handleChange}
                   required
                 >
-                  <MenuItem value="Product 1">Product 1</MenuItem>
-                  <MenuItem value="Product 1">Product 1</MenuItem>
+                  {product.map((product) => (
+                    <MenuItem key={product.id} value={product.productName}>
+                      {product.productName}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
+              
+
+              {/* productName */}
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Quantity(MT)"
-                name=""
-                value={formData.address}
+                name="productQuantity"
+                value={formData.productQuantity}
                 onChange={handleChange}
                 required
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
+             
               <FormControl fullWidth>
                 <InputLabel>Team</InputLabel>
                 <Select
                   label="Team"
-                  name=""
-                  value={formData.supplierName}
+                  name="teamName"
+                  value={formData.teamName}
                   onChange={handleChange}
                   required
+                  disabled={!formData.customerName} // Disable if no customer is selected
                 >
-                  <MenuItem value="Team 1">Team 1</MenuItem>
-                  <MenuItem value="Team 1">Team 1</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Created by</InputLabel>
-                <Select
-                  label="Created by"
-                  name=""
-                  value={formData.supplierName}
-                  onChange={handleChange}
-                  required
-                >
-                  <MenuItem value="Created by 1">Created by 1</MenuItem>
-                  <MenuItem value="Created by 1">Created by 1</MenuItem>
+                  {selectedCustomer?.team && (
+                    <MenuItem
+                      key={selectedCustomer.id}
+                      value={selectedCustomer.team}
+                    >
+                      {selectedCustomer.team}
+                    </MenuItem>
+                  )}
                 </Select>
               </FormControl>
             </Grid>
@@ -227,11 +310,14 @@ function AddOrder() {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Order Number"
-                name=""
-                value={formData.gstNumber}
+                label="Created By"
+                name="orderCreatedBy"
+                value={formData.orderCreatedBy}
                 onChange={handleChange}
                 required
+                InputProps={{
+                  readOnly: true,
+                }}
               />
             </Grid>
 
@@ -240,29 +326,36 @@ function AddOrder() {
                 fullWidth
                 type="datetime-local"
                 label="Order Date & Time"
-                name=""
+                name="orderDateTime"
+                value={formData.orderDateTime}
+                onChange={handleChange}
                 InputLabelProps={{
                   shrink: true,
                 }}
+                required
               />
             </Grid>
           </Grid>
           {/* Action Buttons */}
-          <Box>
-            <Box mt={3} display="flex" justifyContent="center" gap={2}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSubmit}
-              >
-                Book Order
-              </Button>
-              <Button variant="outlined" color="error">
-                Cancel
-              </Button>
-            </Box>
+          <Box mt={3} display="flex" justifyContent="center" gap={2}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "Book Order"}
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => navigate(-1)}
+            >
+              Cancel
+            </Button>
           </Box>
         </form>
+         )}
       </Box>
     </Box>
   );

@@ -23,7 +23,7 @@ import { ArrowBack } from "@mui/icons-material";
 import { FaEye } from "react-icons/fa";
 import { LuArrowDownUp } from "react-icons/lu";
 import AnimatedLogoLoader from '../../component/AnimatedLogoLoader';
-
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function RoleManagment() {
 
@@ -38,9 +38,8 @@ function RoleManagment() {
 
   // Fetch roles from the API
   useEffect(() => {
-    axios
-      // .get("http://localhost:3000/api/roles/")
-      .get("http://localhost:3000/api/roles")
+    axiosInstance
+      .get("/roles")
       .then((response) => {
         console.log(response.data); // Check the structure of the response data
         if (Array.isArray(response.data)) {
@@ -57,9 +56,8 @@ function RoleManagment() {
   // Handle toggle change (active status)
   const handleToggleActive = async (roleId, currentStatus) => {
     try {
-      const response = await axios.patch(
-        // `http://localhost:3000/api/roles/toggle/${roleId}`
-        `http://localhost:3000/api/roles/${roleId}/toggle`
+      const response = await axiosInstance.patch(
+        `/roles/${roleId}/toggle`
       );
       console.log("role status toggled:", response.data);
 

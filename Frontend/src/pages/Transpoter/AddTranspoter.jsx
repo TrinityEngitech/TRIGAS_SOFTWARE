@@ -25,6 +25,7 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import DescriptionIcon from "@mui/icons-material/Description";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 const AddTransporter = () => {
   // responsive
@@ -83,8 +84,8 @@ const AddTransporter = () => {
 
     try {
       // Send data to the backend
-      const response = await axios.post(
-        "http://localhost:3000/api/transporters/createTransporterCompany/",
+      const response = await axiosInstance.post(
+        "/transporters/createTransporterCompany/",
         formData
       );
 
@@ -153,8 +154,8 @@ const AddTransporter = () => {
 
     try {
       // Send the payload to the backend
-      const response = await axios.post(
-        "http://localhost:3000/api/transporters/saveContactDetails/",
+      const response = await axiosInstance.post(
+        "/transporters/saveContactDetails/",
         payload
       );
 
@@ -179,8 +180,8 @@ const AddTransporter = () => {
     const fetchData = async () => {
       try {
         const [productsResponse, driversResponse] = await Promise.all([
-          axios.get("http://localhost:3000/api/products/"),
-          axios.get("http://localhost:3000/api/drivers/"),
+          axiosInstance.get("/products/"),
+          axiosInstance.get("/drivers/"),
         ]);
 
         console.log(driversResponse);
@@ -270,8 +271,8 @@ const AddTransporter = () => {
 
     try {
       // Send the payload to the backend via POST request
-      const response = await axios.post(
-        "http://localhost:3000/api/transporters/saveTankerDetails",
+      const response = await axiosInstance.post(
+        "/transporters/saveTankerDetails",
         payload
       );
 
@@ -308,8 +309,8 @@ const AddTransporter = () => {
   useEffect(() => {
     const fetchTankerData = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/transporters/${uuid}`
+        const response = await axiosInstance.get(
+          `/transporters/${uuid}`
         );
         const tankers = response.data.tankers || [];
         const tankerNumbersList = tankers.map((tanker) => ({
@@ -566,8 +567,8 @@ const AddTransporter = () => {
   
     try {
       // Send the payload to the backend
-      const response = await axios.post(
-        "http://localhost:3000/api/transporters/saveBankDetails", // Replace with your API endpoint
+      const response = await axiosInstance.post(
+        "/transporters/saveBankDetails", // Replace with your API endpoint
         payload
       );
   

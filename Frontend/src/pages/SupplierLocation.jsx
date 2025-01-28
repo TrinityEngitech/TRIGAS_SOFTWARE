@@ -30,6 +30,7 @@ import { ArrowBack } from "@mui/icons-material";
 import { LuArrowDownUp } from "react-icons/lu";
 import AnimatedLogoLoader from "../component/AnimatedLogoLoader";
 import OutlinedInput from "@mui/material/OutlinedInput";
+import axiosInstance from "../Authentication/axiosConfig";
 
 function SupplierLocation() {
   const [selectedRows, setSelectedRows] = useState([]);
@@ -56,8 +57,8 @@ function SupplierLocation() {
 
   // Fetch locations from the API
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/SupplyLocations/supply-locations")
+    axiosInstance
+      .get("/SupplyLocations/supply-locations")
       .then((response) => {
         console.log(response.data); // Check the structure of the response data
         if (Array.isArray(response.data)) {
@@ -102,9 +103,9 @@ function SupplierLocation() {
     // If there's an existing location ID, perform a PUT request to update it
     if (modalData.id) {
       // Perform the PUT request to update the location
-      axios
+      axiosInstance
         .put(
-          `http://localhost:3000/api/SupplyLocations/supply-locations/${modalData.id}`,
+          `/SupplyLocations/supply-locations/${modalData.id}`,
           newlocation
         )
         .then((response) => {
@@ -126,9 +127,9 @@ function SupplierLocation() {
       console.log(newlocation);
 
       // Perform the POST request to add the new location
-      axios
+      axiosInstance
         .post(
-          "http://localhost:3000/api/SupplyLocations/supply-locations",
+          "/SupplyLocations/supply-locations",
           newlocation
         )
         .then((response) => {
@@ -151,9 +152,8 @@ function SupplierLocation() {
   // Handle toggle change (active status)
   const handleToggleActive = async (locationId, currentStatus) => {
     try {
-      const response = await axios.put(
-        // `http://localhost:3000/api/SupplyLocations/supply-locations${locationId}`
-        `http://localhost:3000/api/SupplyLocations/supply-locations/${locationId}`
+      const response = await axiosInstance.put(
+        `/SupplyLocations/supply-locations/${locationId}`
       );
       console.log("location status toggled:", response.data);
 
@@ -242,18 +242,7 @@ function SupplierLocation() {
     return `${day}/${month}/${year} | ${hours}:${minutes}`;
   };
 
-  // // assocate supplier
-  // const [product, setProduct] = useState([]);
-
-  // // // Mock Supplier Data
-  // const productOptions = ["PROPANE", "LPG", "BUTANE", ""];
-
-  // const handleProductChange = (event) => {
-  //   const {
-  //     target: { value },
-  //   } = event;
-  //   setProduct(typeof value === "string" ? value.split(",") : value);
-  // };
+  
 
   return (
     <Box p={3}>

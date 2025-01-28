@@ -20,7 +20,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import { FaEye } from "react-icons/fa";
 import { LuArrowDownUp } from "react-icons/lu";
-// import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
+import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
 
 function Customer() {
   // State for companies data
@@ -35,8 +36,8 @@ function Customer() {
   
   // Fetch companies from the API
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/customers")
+    axiosInstance
+      .get("/customers")
       // .get("http://localhost:3000/api/companies/")
       .then((response) => {
         console.log(response.data); // Check the structure of the response data
@@ -55,8 +56,8 @@ function Customer() {
   // Handle toggle change (active status)
   const handleToggleActive = async (companieId, currentStatus) => {
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/customers/toggle/${companieId}`
+      const response = await axiosInstance.put(
+        `/customers/toggle/${companieId}`
       );
       console.log("companie status toggled:", response.data);
 

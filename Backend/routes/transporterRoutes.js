@@ -38,6 +38,10 @@ router.put('/transporterCompany/:id', transporterController.editTransporterCompa
 router.put('/transporterCompany/:id/contact', transporterController.editTransporterContact);
 router.put('/transporterCompany/:id/bank', transporterController.editTransporterBankDetails);
 
+
+
+router.put('/toggle/:id', transporterController.toggleTransporterStatus);
+
 // http://localhost:3000/api/transporters/transporterCompany/3/contact
 // {
 //   "contacts": [

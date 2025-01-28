@@ -6,6 +6,7 @@ import {
   Routes,
   Route,
   NavLink,
+  // Navigate,
   // useLocation
 } from "react-router-dom";
 import {
@@ -57,8 +58,9 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
 import { FaEnvelope, FaBell } from "react-icons/fa";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
-import Person2Icon from '@mui/icons-material/Person2';
-import StorefrontIcon from '@mui/icons-material/Storefront';
+import Person2Icon from "@mui/icons-material/Person2";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import PermContactCalendarIcon from '@mui/icons-material/PermContactCalendar';
 
 // pages
 import Dashboard from "../pages/Dashboard";
@@ -68,6 +70,7 @@ import AddSupplier from "../pages/Supplier/AddSupplier";
 import EditSupplier from "../pages/Supplier/EditSupplier";
 import SupplierDetails from "../pages/Supplier/SupplierDetails";
 import SupplierLocation from "../pages/SupplierLocation";
+import DoSoNumber from "../pages/Supplier/DoSoNumber";
 import Company from "../pages/Company/Company";
 import AddCompany from "../pages/Company/AddCompany";
 import EditCompany from "../pages/Company/EditCompany";
@@ -113,8 +116,14 @@ import Order from "../pages/Order/Order";
 import AddOrder from "../pages/Order/AddOrder";
 import EditOrder from "../pages/Order/EditOrder";
 import OrderDetali from "../pages/Order/OrderDetali";
-import Login from "../Authentication/Login"
+import Login from "../Authentication/Login";
+import Registration from "../Authentication/Registration";
+import Profile from "../pages/AccountSetting/Profile";
+import ForgotPassword from "../pages/AccountSetting/ForgotPassword";
 import Demo from "../pages/Demo";
+import TestComponent from "../pages/TestComponent";
+
+import { useNavigate } from "react-router-dom";
 
 function AdminPanel({ onLogout }) {
   const [isDark, setIsDark] = useState(false);
@@ -160,6 +169,15 @@ function AdminPanel({ onLogout }) {
   const handleAccordionChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
   };
+
+  // ---------------------------------------------------
+
+  // const role = localStorage.getItem("role");
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const role = user.role;
+
+  // ---------------------------------------------------
 
   return (
     <Router>
@@ -248,253 +266,369 @@ function AdminPanel({ onLogout }) {
                 }}
               >
                 <List>
-                  <ListItem disablePadding>
-                    <ListItemButton component={NavLink} to="/products">
-                      <ListItemIcon>
-                        <BsBoxSeam style={{ color: iconColor }} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="Products"
-                        sx={{
-                          display: isSidebarVisible ? "block" : "none",
-                          marginLeft: "-15px",
-                          color: iconColor,
-                        }}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemButton component={NavLink} to="/supplier">
-                      <ListItemIcon>
-                        <MdOutlinePeopleAlt style={{ color: iconColor }} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="Suppliers"
-                        sx={{
-                          display: isSidebarVisible ? "block" : "none",
-                          marginLeft: "-15px",
-                          color: iconColor,
-                        }}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemButton component={NavLink} to="/supplierLocation">
-                      <ListItemIcon>
-                        <FaLocationDot style={{ color: iconColor }} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary="Supply Location"
-                        sx={{
-                          display: isSidebarVisible ? "block" : "none",
-                          marginLeft: "-15px",
-                          color: iconColor,
-                        }}
-                      />
-                    </ListItemButton>
-                  </ListItem>
+                  {[
+                    "Admin",
+                    "Customer",
+                    "Employee",
+                    "Driver",
+                    "Transporter",
+                  ].includes(role) && (
+                    <ListItem disablePadding>
+                      <ListItemButton component={NavLink} to="/products">
+                        <ListItemIcon>
+                          <BsBoxSeam style={{ color: iconColor }} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Products"
+                          sx={{
+                            display: isSidebarVisible ? "block" : "none",
+                            marginLeft: "-15px",
+                            color: iconColor,
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  )}
+
+                  {[
+                    "Admin",
+                    "Customer",
+                    "Employee",
+                    "Driver",
+                    "Transporter",
+                  ].includes(role) && (
+                    <ListItem disablePadding>
+                      <ListItemButton component={NavLink} to="/supplier">
+                        <ListItemIcon>
+                          <MdOutlinePeopleAlt style={{ color: iconColor }} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Suppliers"
+                          sx={{
+                            display: isSidebarVisible ? "block" : "none",
+                            marginLeft: "-15px",
+                            color: iconColor,
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  )}
+
+                  {[
+                    "Admin",
+                    "Customer",
+                    "Employee",
+                    "Driver",
+                    "Transporter",
+                  ].includes(role) && (
+                    <ListItem disablePadding>
+                      <ListItemButton
+                        component={NavLink}
+                        to="/supplierLocation"
+                      >
+                        <ListItemIcon>
+                          <FaLocationDot style={{ color: iconColor }} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary="Supply Location"
+                          sx={{
+                            display: isSidebarVisible ? "block" : "none",
+                            marginLeft: "-15px",
+                            color: iconColor,
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  )}
                 </List>
               </AccordionDetails>
             </Accordion>
 
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/company">
-                <ListItemIcon>
-                  <PiBuildingOfficeFill
-                    className="fs-4"
-                    style={{ color: iconColor }}
+            {[
+              "Admin",
+              "Customer",
+              "Employee",
+              "Driver",
+              "Transporter",
+            ].includes(role) && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/company">
+                  <ListItemIcon>
+                    <PiBuildingOfficeFill
+                      className="fs-4"
+                      style={{ color: iconColor }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Company"
+                    sx={{
+                      display: isSidebarVisible ? "block" : "none",
+                      marginLeft: "-15px",
+                    }}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Company"
-                  sx={{
-                    display: isSidebarVisible ? "block" : "none",
-                    marginLeft: "-15px",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/roleManagement">
-                <ListItemIcon>
-                  <BsPersonVcardFill
-                    className="fs-4"
-                    style={{ color: iconColor }}
+            {[
+              "Admin",
+              "Customer",
+              "Employee",
+              "Driver",
+              "Transporter",
+            ].includes(role) && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/roleManagement">
+                  <ListItemIcon>
+                    <BsPersonVcardFill
+                      className="fs-4"
+                      style={{ color: iconColor }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Role Management"
+                    sx={{
+                      display: isSidebarVisible ? "block" : "none",
+                      marginLeft: "-15px",
+                    }}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Role Management"
-                  sx={{
-                    display: isSidebarVisible ? "block" : "none",
-                    marginLeft: "-15px",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/teamManagement">
-                <ListItemIcon>
-                  <Diversity3Icon
-                    className="fs-4"
-                    style={{ color: iconColor }}
+            {[
+              "Admin",
+              "Customer",
+              "Employee",
+              "Driver",
+              "Transporter",
+            ].includes(role) && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/teamManagement">
+                  <ListItemIcon>
+                    <Diversity3Icon
+                      className="fs-4"
+                      style={{ color: iconColor }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Team Management"
+                    sx={{
+                      display: isSidebarVisible ? "block" : "none",
+                      marginLeft: "-15px",
+                    }}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Team Management"
-                  sx={{
-                    display: isSidebarVisible ? "block" : "none",
-                    marginLeft: "-15px",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/employeeManagement">
-                <ListItemIcon>
-                  <PeopleAltIcon
-                    className="fs-4"
-                    style={{ color: iconColor }}
+            {[
+              "Admin",
+              "Customer",
+              "Employee",
+              "Driver",
+              "Transporter",
+            ].includes(role) && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/employeeManagement">
+                  <ListItemIcon>
+                    <PeopleAltIcon
+                      className="fs-4"
+                      style={{ color: iconColor }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Employee Management"
+                    sx={{
+                      display: isSidebarVisible ? "block" : "none",
+                      marginLeft: "-15px",
+                    }}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Employee Management"
-                  sx={{
-                    display: isSidebarVisible ? "block" : "none",
-                    marginLeft: "-15px",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/driver">
-                <ListItemIcon>
-                  <CarCrashIcon className="fs-4" style={{ color: iconColor }} />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Driver"
-                  sx={{
-                    display: isSidebarVisible ? "block" : "none",
-                    marginLeft: "-15px",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
-
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/tanker">
-                <ListItemIcon>
-                  <LocalShippingIcon
-                    className="fs-4"
-                    style={{ color: iconColor }}
+            {[
+              "Admin",
+              "Customer",
+              "Employee",
+              "Driver",
+              "Transporter",
+            ].includes(role) && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/driver">
+                  <ListItemIcon>
+                    <CarCrashIcon
+                      className="fs-4"
+                      style={{ color: iconColor }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Driver"
+                    sx={{
+                      display: isSidebarVisible ? "block" : "none",
+                      marginLeft: "-15px",
+                    }}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Tanker"
-                  sx={{
-                    display: isSidebarVisible ? "block" : "none",
-                    marginLeft: "-15px",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/transporter">
-                <ListItemIcon>
-                  <DirectionsBusIcon
-                    className="fs-4"
-                    style={{ color: iconColor }}
+            {[
+              "Admin",
+              "Customer",
+              "Employee",
+              "Driver",
+              "Transporter",
+            ].includes(role) && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/tanker">
+                  <ListItemIcon>
+                    <LocalShippingIcon
+                      className="fs-4"
+                      style={{ color: iconColor }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Tanker"
+                    sx={{
+                      display: isSidebarVisible ? "block" : "none",
+                      marginLeft: "-15px",
+                    }}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Transporters"
-                  sx={{
-                    display: isSidebarVisible ? "block" : "none",
-                    marginLeft: "-15px",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/pricesheet">
-                <ListItemIcon>
-                  <RequestPageIcon
-                    className="fs-4"
-                    style={{ color: iconColor }}
+            {[
+              "Admin",
+              "Customer",
+              "Employee",
+              "Driver",
+              "Transporter",
+            ].includes(role) && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/transporter">
+                  <ListItemIcon>
+                    <DirectionsBusIcon
+                      className="fs-4"
+                      style={{ color: iconColor }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Transporters"
+                    sx={{
+                      display: isSidebarVisible ? "block" : "none",
+                      marginLeft: "-15px",
+                    }}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Pricesheet"
-                  sx={{
-                    display: isSidebarVisible ? "block" : "none",
-                    marginLeft: "-15px",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/commission">
-                <ListItemIcon>
-                  <CurrencyRupeeIcon
-                    className="fs-4"
-                    style={{ color: iconColor }}
+            {[
+              "Admin",
+              "Customer",
+              "Employee",
+              "Driver",
+              "Transporter",
+            ].includes(role) && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/pricesheet">
+                  <ListItemIcon>
+                    <RequestPageIcon
+                      className="fs-4"
+                      style={{ color: iconColor }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Pricesheet"
+                    sx={{
+                      display: isSidebarVisible ? "block" : "none",
+                      marginLeft: "-15px",
+                    }}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Commission"
-                  sx={{
-                    display: isSidebarVisible ? "block" : "none",
-                    marginLeft: "-15px",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/customer">
-                <ListItemIcon>
-                  <Person2Icon
-                    className="fs-4"
-                    style={{ color: iconColor }}
+            {[
+              "Admin",
+              "Customer",
+              "Employee",
+              "Driver",
+              "Transporter",
+            ].includes(role) && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/commission">
+                  <ListItemIcon>
+                    <CurrencyRupeeIcon
+                      className="fs-4"
+                      style={{ color: iconColor }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Commission"
+                    sx={{
+                      display: isSidebarVisible ? "block" : "none",
+                      marginLeft: "-15px",
+                    }}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Customers"
-                  sx={{
-                    display: isSidebarVisible ? "block" : "none",
-                    marginLeft: "-15px",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton component={NavLink} to="/order">
-                <ListItemIcon>
-                  <StorefrontIcon
-                    className="fs-4"
-                    style={{ color: iconColor }}
+            {[
+              "Admin",
+              "Customer",
+              "Employee",
+              "Driver",
+              "Transporter",
+            ].includes(role) && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/customer">
+                  <ListItemIcon>
+                    <Person2Icon
+                      className="fs-4"
+                      style={{ color: iconColor }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Customers"
+                    sx={{
+                      display: isSidebarVisible ? "block" : "none",
+                      marginLeft: "-15px",
+                    }}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Orders"
-                  sx={{
-                    display: isSidebarVisible ? "block" : "none",
-                    marginLeft: "-15px",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            
-            
-
+            {[
+              "Admin",
+              "Customer",
+              "Employee",
+              "Driver",
+              "Transporter",
+            ].includes(role) && (
+              <ListItem disablePadding>
+                <ListItemButton component={NavLink} to="/order">
+                  <ListItemIcon>
+                    <StorefrontIcon
+                      className="fs-4"
+                      style={{ color: iconColor }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Orders"
+                    sx={{
+                      display: isSidebarVisible ? "block" : "none",
+                      marginLeft: "-15px",
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            )}
           </List>
         </div>
 
@@ -606,20 +740,26 @@ function AdminPanel({ onLogout }) {
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
               >
-                <MenuItem >
+                <MenuItem component={NavLink} to="/profile">
                   <ListItemIcon>
                     <PersonIcon fontSize="small" />
                   </ListItemIcon>
                   Profile
                 </MenuItem>
+                <MenuItem component={NavLink} to="/registration">
+                  <ListItemIcon>
+                    <PermContactCalendarIcon fontSize="small" />
+                  </ListItemIcon>
+                 Registration
+                </MenuItem>
                 <Divider />
-                <MenuItem >
+                <MenuItem>
                   <ListItemIcon>
                     <Settings fontSize="small" />
                   </ListItemIcon>
                   Settings
                 </MenuItem>
-                <MenuItem  onClick={onLogout} >
+                <MenuItem onClick={onLogout}>
                   <ListItemIcon>
                     <Logout fontSize="small" />
                   </ListItemIcon>
@@ -635,24 +775,43 @@ function AdminPanel({ onLogout }) {
             style={{ height: "auto" }}
           >
             <Routes>
-            <Route path="/login" element={<Login />} />
+              <Route path="/testdata" element={<TestComponent />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/" element={<Dashboard />} />
-              <Route path="/products" element={<Products />} />
+              {/* <Route path="/products" element={<Products />} /> */}
+
+              {/* {(role === "Admin" ||
+                role === "Customer" ||
+                role === "Employee" ||
+                role === "Driver" ||
+                role === "Transporter") && ( */}
+                <Route path="/products" element={<Products />} />
+              {/* )} */}
+
               {/* supplier */}
+
               <Route path="/supplier" element={<Supplier />} />
+
               <Route path="/addsupplier" element={<AddSupplier />} />
+
               <Route path="/editsupplier/:id" element={<EditSupplier />} />
+
               <Route
                 path="/supplierdetalils/:id"
                 element={<SupplierDetails />}
               />
+
               <Route path="/supplierLocation" element={<SupplierLocation />} />
+
               <Route path="/manageAvaliblity" element={<ManageAvaliblity />} />
+
+              <Route path="/DOSO_Number/:id" element={<DoSoNumber />} />
+
               {/* company */}
               <Route path="/company" element={<Company />} />
               <Route path="/addCompany" element={<AddCompany />} />
               <Route path="/editCompany/:id" element={<EditCompany />} />
-              <Route path="/viewCompany" element={<ViewCompany />} />
+              <Route path="/viewCompany/:id" element={<ViewCompany />} />
               {/* Role Managment */}
               <Route path="/roleManagement" element={<RoleManagment />} />
               <Route path="/addRoles" element={<AddRole />} />
@@ -674,7 +833,9 @@ function AdminPanel({ onLogout }) {
               {/* tanker */}
               <Route path="/tanker" element={<Tanker />} />
               <Route path="/addTanker" element={<AddTanker />} />
+
               <Route path="/editTanker/:id" element={<EditTanker />} />
+
               <Route path="/viewTanker/:id" element={<ViewTanker />} />
               {/* transpoter */}
               <Route path="/transporter" element={<Transpoter />} />
@@ -748,14 +909,20 @@ function AdminPanel({ onLogout }) {
               />
               <Route path="/editCustomer/:uuid" element={<EditCustomer />} />
               <Route path="/viewCustomer/:id" element={<ViewCustomer />} />
-              <Route path="/ViewCustomerBank/:id" element={<ViewCustomerBank/>} />
+              <Route
+                path="/ViewCustomerBank/:id"
+                element={<ViewCustomerBank />}
+              />
               {/* Order */}
-              <Route path="/order" element={<Order/>} />
-              <Route path="/addOrder" element={<AddOrder/>} />
-              <Route path="/editOrder" element={<EditOrder/>} />
-              <Route path="/orderDetali" element={<OrderDetali/>} />
+              <Route path="/order" element={<Order />} />
+              <Route path="/addOrder" element={<AddOrder />} />
+              <Route path="/editOrder/:id" element={<EditOrder />} />
+              <Route path="/orderDetali" element={<OrderDetali />} />
               <Route path="*" element={<h1>Page Not Found</h1>} />
-
+              {/* account setting */}
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/registration" element={<Registration />} />
+              <Route path="/forgotPassword" element={<ForgotPassword />} />
               <Route path="/demo" element={<Demo />} />
             </Routes>
           </div>
@@ -766,3 +933,38 @@ function AdminPanel({ onLogout }) {
 }
 
 export default AdminPanel;
+
+//<Routes>
+// <Route path="/testdata" element={<TestComponent />} />
+// <Route path="/login" element={<Login />} />
+// <Route path="/" element={<Dashboard />} />
+//
+// {/* Routes accessible to Admin (all routes) */}
+// {role === "Admin" && (
+//   <>
+//     {/* here show all routess */}
+//   </>
+// )}
+//
+// {/* Routes accessible to Customer */}
+// {role === "Customer" && (
+//   <>
+//    {/* selected Routes */}
+//   </>
+// )}
+//
+// {/* Routes accessible to Employee */}
+// {role === "Employee" && (
+//   <>
+//     {/* selected routes */}
+//   </>
+// )}
+//
+// {/* Account Settings */}
+// <Route path="/profile" element={<Profile />} />
+// <Route path="/forgotPassword" element={<ForgotPassword />} />
+// <Route path="/demo" element={<Demo />} />
+//
+// {/* Fallback Route */}
+// <Route path="*" element={<h1>Page Not Found</h1>} />
+// </Routes>

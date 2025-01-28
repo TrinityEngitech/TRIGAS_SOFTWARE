@@ -23,6 +23,7 @@ import { ArrowBack } from "@mui/icons-material";
 // import { FaEye } from "react-icons/fa";
 import { Delete } from "@mui/icons-material";
 import axios from "axios";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function TransportationCharge() {
   const navigate = useNavigate();
@@ -47,12 +48,12 @@ function TransportationCharge() {
     const fetchData = async () => {
       try {
         const [productsResponse, locationsResponse , supplierResponse] = await Promise.all([
-          axios.get("http://localhost:3000/api/products/"),
-          axios.get(
-            "http://localhost:3000/api/SupplyLocations/supply-locations"
+          axiosInstance.get("/products/"),
+          axiosInstance.get(
+            "/SupplyLocations/supply-locations"
           ),
-          axios.get(
-            "http://localhost:3000/api/supplier"
+          axiosInstance.get(
+            "/supplier"
           ),
         ]);
 
@@ -98,7 +99,7 @@ function TransportationCharge() {
  // Fetch transportation charges
 const fetchCharges = async () => {
   try {
-    const response = await axios.get("http://localhost:3000/api/transportation-charges");
+    const response = await axiosInstance.get("/transportation-charges");
     // console.log("Fetched data:", response.data); // Log the response
     setCharges(response.data);
   } catch (error) {
@@ -136,8 +137,8 @@ const fetchCharges = async () => {
       setIsLoading(true); // Start loading indicator
   
       // Send data to backend using axios
-      const response = await axios.post(
-        "http://localhost:3000/api/transportation-charges",
+      const response = await axiosInstance.post(
+        "/transportation-charges",
         formData
       );
   
@@ -202,7 +203,7 @@ const fetchCharges = async () => {
   // Delete a transportation charge
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/api/transportation-charges/${id}`);
+      await axiosInstance.delete(`/transportation-charges/${id}`);
       setCharges((prev) => prev.filter((charge) => charge.id !== id));
     } catch (error) {
       console.error("Error deleting charge:", error);

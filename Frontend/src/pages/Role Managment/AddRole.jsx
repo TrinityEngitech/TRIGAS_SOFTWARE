@@ -9,6 +9,7 @@ import {
 import axios from "axios";
 import { useNavigate,Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function AddRole() {
   // Default activeStatus is true, no user interaction needed
@@ -33,7 +34,7 @@ function AddRole() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3000/api/roles", formData);
+      const response = await axiosInstance.post("/roles", formData);
       console.log("Response from server:", response.data);
       // Redirect or show success
       navigate("/roleManagement");  // Adjust the redirect path as needed
@@ -100,7 +101,7 @@ function AddRole() {
             <Button variant="contained" color="primary" type="submit">
               Save
             </Button>
-            <Button variant="outlined" color="error" onClick={() => navigate("/roles")}>
+            <Button variant="outlined" color="error" onClick={() => navigate("/roleManagement")}>
               Cancel
             </Button>
           </Box>

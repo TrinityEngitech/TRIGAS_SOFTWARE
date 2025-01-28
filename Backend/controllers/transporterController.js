@@ -367,6 +367,30 @@ exports.getTransporterCompanyById = async (req, res) => {
   }
 };
 
+exports.toggleTransporterStatus = async (req, res) => {
+  try {
+    const transporterId = parseInt(req.params.id);
+
+    const transporter = await prisma.transporterCompanyDetails.findUnique({
+      where: { id: transporterId },
+    });
+    if (!transporter) {
+      return res.status(404).json({ error: "transporter not found" });
+    }
+
+    // Toggle active status
+    const updatedTranporter = await prisma.transporterCompanyDetails.update({
+      where: { id: transporterId },
+      data: {
+        activeStatus: !transporter.activeStatus,
+      },
+    });
+
+    res.status(200).json(updatedTranporter);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to toggle Tranporter status", details: error.message });
+  }
+};
 
 exports.deleteTankerById = async (req, res) => {
   const { tankerId } = req.params; // Extract tanker ID from request parameters

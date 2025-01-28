@@ -16,6 +16,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import axios from "axios";
 import AnimatedLogoLoader from '../../component/AnimatedLogoLoader';
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function TeamDetails() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ function TeamDetails() {
   useEffect(() => {
     const fetchTeamDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/teams/${id}`);
+        const response = await axiosInstance.get(`/teams/${id}`);
         setTeamDetails(response.data); // Set the response data to the state
       } catch (error) {
         console.error("Error fetching team details:", error);

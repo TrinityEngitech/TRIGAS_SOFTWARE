@@ -68,4 +68,35 @@ router.post('/login', [
     }
 });
 
+// Get all users
+router.get('/users', async (req, res) => {
+    try {
+        // Assuming you have a middleware for checking the logged-in user's role (e.g., via JWT)
+        const loggedInUser = req.user; // Get logged-in user from JWT (set by a previous middleware)
+
+        // Fetch all users from the database
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+            }
+        });
+
+        // If logged-in user is admin, send plain passwords temporarily
+        if (loggedInUser.role === 'admin') {
+            // Temporarily add plain passwords for admin users (without storing it in the database)
+            users.forEach(user => {
+                user.plainPassword = 'plain-password-here'; // This can be fetched only for admin
+            });
+        }
+
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
+
 module.exports = router;

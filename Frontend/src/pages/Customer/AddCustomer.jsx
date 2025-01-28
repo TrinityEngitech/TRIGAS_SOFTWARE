@@ -25,6 +25,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Add } from "@mui/icons-material";
 import axios from "axios";
 import _ from "lodash";
+import axiosInstance from "../../Authentication/axiosConfig"; // Import the custom Axios instance
+
 // import { FormControl, InputLabel, Select, MenuItem, OutlinedInput, Box, Chip } from '@mui/material';
 import { useMediaQuery, useTheme } from "@mui/material";
 import { useNavigate, Link, useParams } from "react-router-dom";
@@ -49,7 +51,7 @@ function AddTransporter() {
   const [selectAllSuppliers, setSelectAllSuppliers] = useState(false);
   useEffect(() => {
     const fetchSuppliers = async () => {
-      const response = await axios.get("http://localhost:3000/api/supplier"); // Update this with the actual API endpoint
+      const response = await axiosInstance.get("/supplier"); 
       console.log(response.data || []);
 
       setSuppliers(response.data); // Set the data to state
@@ -58,18 +60,30 @@ function AddTransporter() {
     fetchSuppliers(); // Call the function to fetch data
   }, []);
   console.log("suppliers", suppliers);
+
   const [product, setProduct] = useState([]); // State to store supplier data
+
+
   useEffect(() => {
-    const fetchSuppliers = async () => {
-      const response = await axios.get("http://localhost:3000/api/products"); // Update this with the actual API endpoint
-      console.log(response.data || []);
-
-      setProduct(response.data); // Set the data to state
+    const fetchProducts = async () => {
+      try {
+        const response = await axiosInstance.get("/products/");
+        console.log(response.data); // Check the structure of the response data
+        
+        if (Array.isArray(response.data)) {
+          setProduct(response.data); // Set products if the response is an array
+        } else {
+          console.error("Received data is not an array");
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
     };
-
-    fetchSuppliers(); // Call the function to fetch data
+  
+    fetchProducts(); // Call the async function
   }, []);
-  console.log("product", product);
+  
+
   // Track "Select All" state
 
   // // Mock Supplier Data
@@ -78,7 +92,7 @@ function AddTransporter() {
   useEffect(() => {
     const fetchTeamDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/teams/`);
+        const response = await axiosInstance.get(`/teams/`);
         setTeamDetails(response.data || []); // Set the response data to the state
       } catch (error) {
         console.error("Error fetching team details:", error);
@@ -93,8 +107,8 @@ function AddTransporter() {
   const [selectAllCompanies, setSelectAllCompanies] = useState([]);
   console.log(companies);
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/companies/")
+    axiosInstance
+      .get("/companies/")
       // .get("http://localhost:3000/api/companies/")
       .then((response) => {
         console.log(response.data); // Check the structure of the response data
@@ -112,8 +126,8 @@ function AddTransporter() {
   const [selectedTransporter, setSelectedTransporter] = useState(""); // State for selected transporter
   console.log(transporter);
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/transporters/")
+    axiosInstance
+      .get("/transporters/")
       .then((response) => {
         console.log(response.data); // Check the structure of the response data
         if (Array.isArray(response.data)) {
@@ -142,8 +156,8 @@ function AddTransporter() {
   useEffect(() => {
     const fetchCustomerDetails = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/customers/${uuid}`
+        const response = await axiosInstance.get(
+          `/customers/${uuid}`
         );
         setCustomerDetails(response.data); // Store customer details
         setBankDetails(response.data.bankDetails || []); // Store bankDetails
@@ -282,8 +296,8 @@ function AddTransporter() {
     console.log("Updated Form Data:", updatedFormData);
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/customers/createCustomerDetails",
+      const response = await axiosInstance.post(
+        "/customers/createCustomerDetails",
         updatedFormData
       );
       console.log("Response:", response.data);
@@ -349,8 +363,8 @@ function AddTransporter() {
 
     try {
       // Send the payload to the backend
-      const response = await axios.post(
-        "http://localhost:3000/api/customers/customerContactDetails",
+      const response = await axiosInstance.post(
+        "/customers/customerContactDetails",
         payload
       );
 
@@ -397,8 +411,8 @@ function AddTransporter() {
     console.log("generalDetalis to be sent to backend:", generalDetalis);
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/customers/customerGeneralDetails",
+      const response = await axiosInstance.post(
+        "/customers/customerGeneralDetails",
         {
           customerId: uuid,
           ...generalDetalis, // Sending all the form data
@@ -421,7 +435,7 @@ function AddTransporter() {
     {
       supplierId: "", // To store the unique identifier for the supplier
       supplierName: "", // To store the name of the supplier
-      product: "", // To store the product name
+      product:"", // To store the product name
       sapcode: "", // To store the SAP code
     },
   ]);
@@ -430,6 +444,10 @@ function AddTransporter() {
 
   const handleSAPChange = (index, field, value) => {
     const updatedSAP = [...SAP];
+    
+  if (field === "product") {
+    updatedSAP[index].product = value.join(", "); // Convert selected products to a string
+  } else
     if (field === "supplier") {
       const selectedSupplier = suppliers.find(
         (supplier) => supplier.id === value
@@ -442,6 +460,15 @@ function AddTransporter() {
     }
     setSAP(updatedSAP);
   };
+
+  const handleSelectAll = (index, isChecked) => {
+    const updatedSAP = [...SAP];
+    updatedSAP[index].product = isChecked
+      ? product.map((p) => p.productName).join(", ")  // Select all products
+      : ""; // Deselect all products
+    setSAP(updatedSAP);
+  };
+
 
   // Add a new contact detail
   const addSAP = () => {
@@ -465,6 +492,7 @@ function AddTransporter() {
       sapCodesDetails: SAP.map((item) => ({
         supplierName: item.supplierName || "", // Ensure supplier name is passed
         productName: item.product || "", // Ensure product name is passed
+        // productName: item.product.split(", ").filter((p) => p) || "",
         sapCode: item.sapcode || "", // Ensure SAP code is passed
       })),
     };
@@ -477,6 +505,7 @@ function AddTransporter() {
       supplierId: item.supplierId || "", // Use the supplierId for this entry
       supplierName: item.supplierName || "", // Ensure supplierName is passed
       productName: item.product || "", // Ensure productName is passed
+      // productName: item.product.split(", ").filter((p) => p) || "",
       sapCode: item.sapcode || "", // Ensure sapCode is passed
       supplierLogo: item.supplierLogo || "", // Ensure sapCode is passed
     }));
@@ -905,60 +934,57 @@ const groupedBankDetails = _.groupBy(bankDetails, "supplierName");
                   </Grid>
                   {/* 15 */}
                   <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth>
-                      <InputLabel>Our of Company</InputLabel>
-                      <Select
-                        label="Our of Company"
-                        multiple
-                        name="ourCompany"
-                        value={selectedCompanies}
-                        onChange={(e) => handleChange(e, "companies")}
-                        renderValue={(selected) => (
-                          <Box
-                            sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}
-                          >
-                            {selected.length > 0 ? (
-                              selected.map((value) => (
-                                <Chip key={value} label={value} />
-                              ))
-                            ) : (
-                              <Chip
-                                label="No companies selected"
-                                color="default"
-                              />
-                            )}
-                          </Box>
-                        )}
-                      >
-                        {/* Select All Option */}
-                        <MenuItem value="all">
-                          <Checkbox checked={selectAllCompanies} />
-                          <ListItemText primary="Select All" />
-                        </MenuItem>
+  <FormControl fullWidth>
+    <InputLabel>BA(Business Associated)</InputLabel>
+    <Select
+      label="BA(Business Associated)"
+      multiple
+      name="ourCompany"
+      value={selectedCompanies}
+      onChange={(e) => handleChange(e, "companies")}
+      renderValue={(selected) => (
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+          {selected.length > 0 ? (
+            selected.map((value) => (
+              <Chip key={value} label={value} />
+            ))
+          ) : (
+            <Chip label="No companies selected" color="default" />
+          )}
+        </Box>
+      )}
+    >
+      {/* Select All Option */}
+      <MenuItem value="all">
+        <Checkbox checked={selectAllCompanies} />
+        <ListItemText primary="Select All" />
+      </MenuItem>
 
-                        {/* Company Options */}
-                        {companies.length > 0 ? (
-                          companies.map((company) => (
-                            <MenuItem
-                              key={company.id}
-                              value={company.companyName}
-                            >
-                              <Checkbox
-                                checked={
-                                  selectedCompanies.indexOf(
-                                    company.companyName
-                                  ) > -1
-                                }
-                              />
-                              <ListItemText primary={company.companyName} />
-                            </MenuItem>
-                          ))
-                        ) : (
-                          <MenuItem disabled>No Companies Available</MenuItem>
-                        )}
-                      </Select>
-                    </FormControl>
-                  </Grid>
+      {/* Company Options */}
+      {companies.length > 0 ? (
+        companies.map((company) => {
+          const combinedValue = `${company.companyName} (${company.supplierName})`; // Combine companyName and supplierName
+
+          return (
+            <MenuItem key={company.id} value={combinedValue}>
+              {/* <Checkbox
+                checked={selectedCompanies.indexOf(combinedValue) > -1}
+              /> */}
+              <Checkbox
+                checked={selectedCompanies.indexOf(combinedValue) > -1 || selectAllCompanies}
+              />
+              {/* Display companyName and supplierName */}
+              <ListItemText primary={`${company.companyName} (${company.supplierName})`} />
+            </MenuItem>
+          );
+        })
+      ) : (
+        <MenuItem disabled>No Companies Available</MenuItem>
+      )}
+    </Select>
+  </FormControl>
+</Grid>
+
                   {/* 16 */}
                   <Grid item xs={12} sm={6}>
                     <TextField
@@ -1504,104 +1530,111 @@ const groupedBankDetails = _.groupBy(bankDetails, "supplierName");
                   </Button>
                 </Box>
                 {SAP.map((SAPCode, index) => (
-                  <Box key={index} p={2}>
-                    <Box
-                      display="flex"
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          gap: 2, // Space between fields
-                          flex: 1, // Ensures the fields occupy the maximum available space
-                        }}
-                      >
-                        <FormControl sx={{ flex: 1 }}>
-                          <InputLabel>Supplier Name</InputLabel>
-                          <Select
-                            label="Supplier Name"
-                            value={SAP[index]?.supplierId || ""} // Use supplierId for the dropdown value
-                            onChange={(e) =>
-                              handleSAPChange(index, "supplier", e.target.value)
-                            } // Pass supplierId on change
-                          >
-                            {suppliers.map((supplier) => (
-                              <MenuItem key={supplier.id} value={supplier.id}>
-                                {supplier.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
+  <Box key={index} p={2}>
+    <Box
+      display="flex"
+      justifyContent="space-between"
+      alignItems="center"
+    >
+      {/* Left Side Fields */}
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2, // Space between fields
+          flex: 1, // Ensures the fields occupy the maximum available space
+        }}
+      >
+        {/* Supplier Name Field */}
+        <FormControl sx={{ flex: 1 }}>
+          <InputLabel>Supplier Name</InputLabel>
+          <Select
+            label="Supplier Name"
+            value={SAPCode.supplierId || ""} // Use supplierId for the dropdown value
+            onChange={(e) =>
+              handleSAPChange(index, "supplier", e.target.value)
+            } // Pass supplierId on change
+          >
+            {suppliers.map((supplier) => (
+              <MenuItem key={supplier.id} value={supplier.id}>
+                {supplier.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-                        <FormControl sx={{ flex: 1 }}>
-                          <InputLabel>product Name</InputLabel>
-                          <Select
-                            label="product Name"
-                            value={SAPCode.product || ""} // Default value or selected value
-                            onChange={(e) =>
-                              handleSAPChange(index, "product", e.target.value)
-                            }
-                          >
-                            {product.map((product, idx) => (
-                              <MenuItem key={idx} value={product.productName}>
-                                {product.productName}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
+        {/* Product Name Field */}
+        <FormControl sx={{ flex: 1 }}>
+          <InputLabel>Product Name</InputLabel>
+          <Select
+            label="Product Name"
+            multiple
+            value={SAPCode.product.split(", ").filter((item) => item) || []}
+            onChange={(e) =>
+              handleSAPChange(index, "product", e.target.value)
+            }
+            renderValue={(selected) => selected.join(", ")} // Display selected products
+          >
+            <MenuItem>
+              <Checkbox
+                checked={
+                  SAPCode.product.split(", ").filter((item) => item).length === product.length &&
+                  product.length > 0
+                }
+                onChange={(e) => handleSelectAll(index, e.target.checked)}
+              />
+              <ListItemText primary="Select All" />
+            </MenuItem>
+            {product.map((p, idx) => (
+              <MenuItem key={idx} value={p.productName}>
+                <Checkbox checked={SAPCode.product.includes(p.productName)} />
+                <ListItemText primary={p.productName} />
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-                        {/* 
-                        <TextField
-                          label="product"
-                          name="product"
-                          value={SAPCode.product}
-                          onChange={(e) =>
-                            handleSAPChange(index, "product", e.target.value)
-                          }
-                          sx={{ flex: 1 }}
-                        /> */}
+        {/* SAP Code Field */}
+        <TextField
+          label="SAP Code"
+          value={SAPCode.sapcode}
+          onChange={(e) =>
+            handleSAPChange(index, "sapcode", e.target.value)
+          }
+          sx={{ flex: 1 }}
+        />
+      </Box>
 
-                        <TextField
-                          label=" SAP Code"
-                          value={SAPCode.sapcode}
-                          onChange={(e) =>
-                            handleSAPChange(index, "sapcode", e.target.value)
-                          }
-                          sx={{ flex: 1 }}
-                        />
-                      </Box>
+      {/* Close Button on the Right */}
+      <IconButton
+        onClick={() => {
+          if (SAP.length > 1) {
+            removeSAP(index);
+          }
+        }}
+        sx={{
+          backgroundColor: "#cf0202",
+          borderRadius: "50%",
+          width: "30px",
+          height: "30px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#fff",
+          marginLeft: "16px", // Space between fields and button
+          cursor: SAP.length === 1 ? "not-allowed" : "pointer",
+          pointerEvents: SAP.length === 1 ? "none" : "auto",
+          visibility: SAP.length === 1 ? "hidden" : "visible",
+          "&:hover": {
+            backgroundColor: "#a80202",
+          },
+        }}
+      >
+        <i className="bi bi-x"></i>
+      </IconButton>
+    </Box>
+  </Box>
+))}
 
-                      {/* Close Button on the Right */}
-                      <IconButton
-                        onClick={() => {
-                          if (SAP.length > 1) {
-                            removeSAP(index);
-                          }
-                        }}
-                        sx={{
-                          backgroundColor: "#cf0202",
-                          borderRadius: "50%",
-                          width: "30px",
-                          height: "30px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "#fff",
-                          marginLeft: "16px", // Space between fields and button
-                          cursor: SAP.length === 1 ? "not-allowed" : "pointer",
-                          pointerEvents: SAP.length === 1 ? "none" : "auto",
-                          visibility: SAP.length === 1 ? "hidden" : "visible",
-                          "&:hover": {
-                            backgroundColor: "#a80202",
-                          },
-                        }}
-                      >
-                        <i className="bi bi-x"></i>
-                      </IconButton>
-                    </Box>
-                  </Box>
-                ))}
                 <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
                   <Button
                     type="submit"

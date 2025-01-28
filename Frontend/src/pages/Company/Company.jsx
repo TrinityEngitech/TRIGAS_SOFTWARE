@@ -20,6 +20,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import { FaEye } from "react-icons/fa";
 import { LuArrowDownUp } from "react-icons/lu";
+import axiosInstance from "../../Authentication/axiosConfig";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
 
 function Company() {
@@ -36,9 +37,9 @@ function Company() {
 
   // Fetch companies from the API
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/companies/")
-      // .get("http://localhost:3000/api/companies/")
+    axiosInstance
+      .get("/companies/")
+
       .then((response) => {
         console.log(response.data); // Check the structure of the response data
         if (Array.isArray(response.data)) {
@@ -55,8 +56,8 @@ function Company() {
   // Handle toggle change (active status)
   const handleToggleActive = async (companieId, currentStatus) => {
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/companies/toggle/${companieId}`
+      const response = await axiosInstance.put(
+        `/companies/toggle/${companieId}`
       );
       console.log("companie status toggled:", response.data);
 
@@ -72,8 +73,6 @@ function Company() {
       console.error("Error toggling companie status:", error);
     }
   };
-
- 
 
   // filter/search/pagination/datetime format
   // Sorting states
@@ -147,8 +146,6 @@ function Company() {
 
     return `${day}/${month}/${year} | ${hours}:${minutes}`;
   };
-
- 
 
   return (
     <Box p={3}>
@@ -285,46 +282,45 @@ function Company() {
               </TableRow>
             </TableHead>
             <TableBody>
-            {companies.length === 0 ? (
-                  // Show loader when no suppliers are available
-                  <TableRow>
-                    <TableCell colSpan={4} align="center">
-                      {/* <AnimatedLogoLoader /> */}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-              paginatedcompanies.map((companie) => (
-                <TableRow key={companie.id}>
-                  <TableCell align="center">{companie.companyName}</TableCell>
-                  <TableCell align="center">{companie.ownerName}</TableCell>
-                  <TableCell align="center">{companie.GSTNumber}</TableCell>
-                  <TableCell align="center">
-                    {formatDate(companie.createDate)}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Switch
-                      checked={companie.activeStatus}
-                      onChange={() =>
-                        handleToggleActive(companie.id, companie.activeStatus)
-                      }
-                    />
-                  </TableCell>
-
-                  <TableCell align="center">
-                    <Link to="/viewCompany">
-                      {/* // {`/supplierdetalils/${supplier.id}`} */}
-                      <IconButton color="dark">
-                        <FaEye />
-                      </IconButton>
-                    </Link>
-                    <Link to={`/editCompany/${companie.id}`}>
-                      <IconButton color="dark">
-                        <Edit />
-                      </IconButton>
-                    </Link>
+              {companies.length === 0 ? (
+                // Show loader when no suppliers are available
+                <TableRow>
+                  <TableCell colSpan={4} align="center">
+                    {/* <AnimatedLogoLoader /> */}
                   </TableCell>
                 </TableRow>
-               ))
+              ) : (
+                paginatedcompanies.map((companie) => (
+                  <TableRow key={companie.id}>
+                    <TableCell align="center">{companie.companyName}</TableCell>
+                    <TableCell align="center">{companie.ownerName}</TableCell>
+                    <TableCell align="center">{companie.GSTNumber}</TableCell>
+                    <TableCell align="center">
+                      {formatDate(companie.createDate)}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Switch
+                        checked={companie.activeStatus}
+                        onChange={() =>
+                          handleToggleActive(companie.id, companie.activeStatus)
+                        }
+                      />
+                    </TableCell>
+
+                    <TableCell align="center">
+                      <Link to={`/viewCompany/${companie.id}`}>
+                        <IconButton color="dark">
+                          <FaEye />
+                        </IconButton>
+                      </Link>
+                      <Link to={`/editCompany/${companie.id}`}>
+                        <IconButton color="dark">
+                          <Edit />
+                        </IconButton>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
@@ -345,5 +341,3 @@ function Company() {
 }
 
 export default Company;
-
-

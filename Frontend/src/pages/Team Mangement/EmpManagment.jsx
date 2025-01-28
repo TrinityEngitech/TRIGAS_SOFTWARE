@@ -21,6 +21,7 @@ import { ArrowBack } from "@mui/icons-material";
 import { FaEye } from "react-icons/fa";
 import { LuArrowDownUp } from "react-icons/lu";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function EmpManagment() {
   // State for employees data
@@ -34,8 +35,8 @@ function EmpManagment() {
 
   // Fetch employees from the API
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/employees")
+    axiosInstance
+      .get("/employees")
       .then((response) => {
         console.log(response.data); // Check the structure of the response data
         if (Array.isArray(response.data)) {
@@ -52,8 +53,8 @@ function EmpManagment() {
   // Handle toggle change (active status)
   const handleToggleActive = async (employeeId, currentStatus) => {
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/employees/toggle/${employeeId}`
+      const response = await axiosInstance.put(
+        `/employees/toggle/${employeeId}`
       );
       console.log("employee status toggled:", response.data);
 

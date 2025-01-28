@@ -23,6 +23,7 @@ import { ArrowBack } from "@mui/icons-material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function TankerNumber() {
   const navigate = useNavigate();
@@ -38,8 +39,8 @@ function TankerNumber() {
     // Fetch data from API
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/transporters/transporterId/${id}`
+        const response = await axiosInstance.get(
+          `/transporters/transporterId/${id}`
         );
         setTankerNumber(response.data.tankers || []); // Ensure data is an array
       } catch (error) {
@@ -97,26 +98,23 @@ const groupedTankers = groupByProduct(tankerNumber);
 
   
   // Handle toggle change (active status)
-  const handleToggleActive = async (transpoterId, currentStatus) => {
+  const handleToggleActive = async (tankerId, currentStatus) => {
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/transporters/toggle/${transpoterId}`
+      const response = await axiosInstance.put(
+        `/tankers/toggle/${tankerId}`
       );
-      console.log("transpoter status toggled:", response.data);
-
-      // Update the state directly
-      setTankerNumber((prevtranspoter) =>
-        prevtranspoter.map((transpoter) =>
-          transpoter.id === transpoterId
-            ? { ...transpoter, activeStatus: !currentStatus } // Toggle status in the UI
-            : transpoter
+      console.log("Tanker status toggled:", response.data);
+      setTankerNumber((prevTanker) =>
+        prevTanker.map((tanker) =>
+          tanker.id === tankerId
+            ? { ...tanker, activeStatus: !currentStatus }
+            : tanker
         )
       );
     } catch (error) {
-      console.error("Error toggling driver status:", error);
+      console.error("Error toggling tanker status:", error);
     }
   };
-
 
   return (
     <Box p={3}>
@@ -175,7 +173,7 @@ const groupedTankers = groupByProduct(tankerNumber);
               }}
             >
               <Box>
-                <Typography variant="subtitle1">{product}</Typography>
+                <Typography sx={{fontSize:"18px"}}>{product}</Typography>
                 <Typography
                   sx={{
                     color: "#0288d1",

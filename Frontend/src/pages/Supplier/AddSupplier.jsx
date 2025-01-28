@@ -16,7 +16,7 @@ import { Add } from "@mui/icons-material";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import axios from "axios";
-
+import axiosInstance from "../../Authentication/axiosConfig"; // Import the custom Axios instance
 
 const AddSupplier = () => {
   const navigate = useNavigate();
@@ -75,10 +75,8 @@ const AddSupplier = () => {
     const fetchData = async () => {
       try {
         const [productsResponse, locationsResponse] = await Promise.all([
-          axios.get("http://localhost:3000/api/products/"),
-          axios.get(
-            "http://localhost:3000/api/SupplyLocations/supply-locations"
-          ),
+          axiosInstance.get("products/"),
+          axiosInstance.get("SupplyLocations/supply-locations"),
         ]);
 
         console.log(locationsResponse);
@@ -104,17 +102,13 @@ const AddSupplier = () => {
     fetchData();
   }, []);
 
-  // Handle change for supplier details
-  // const handleSupplierChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setSupplierDetails({ ...supplierDetails, [name]: value });
-  // };
+
 
   const handleSupplierChange = (e) => {
     const { name, files } = e.target;
-  
+
     if (files) {
-      console.log("Logo File Selected:", files[0]);  // Log the selected file
+      console.log("Logo File Selected:", files[0]); // Log the selected file
       setSupplierDetails((prevDetails) => ({
         ...prevDetails,
         [name]: files[0], // Store the file object
@@ -126,8 +120,6 @@ const AddSupplier = () => {
       }));
     }
   };
-  
-  
 
   // Handle change for product name and product code
   const handleProductChange = (productId, field, value) => {
@@ -143,7 +135,6 @@ const AddSupplier = () => {
     updatedLocations[index][field] = value;
     setProductLocations({ ...productLocations, [productId]: updatedLocations });
   };
- 
 
   const handleBankChange = (index, field, value) => {
     console.log(
@@ -257,23 +248,23 @@ const AddSupplier = () => {
 
     // Ensure the logo file is being appended with the correct field name
     if (supplierDetails.supplierLogo) {
-        formData.append("supplierLogo", supplierDetails.supplierLogo); // Make sure the field name matches 'supplierLogo' in multer
+      formData.append("supplierLogo", supplierDetails.supplierLogo); // Make sure the field name matches 'supplierLogo' in multer
     } else {
-        console.error("No logo file found");
+      console.error("No logo file found");
     }
 
     // Prepare the other data
     const dataToSend = {
-        supplierName: supplierDetails.supplierName,
-        legalName: supplierDetails.legalName,
-        supplierEmail: supplierDetails.supplierEmail,
-        supplierGstNumber: supplierDetails.supplierGstNumber,
-        supplierPanNumber: supplierDetails.supplierPanNumber,
-        products,
-        productLocations,
-        contacts,
-        bankDetails: bank,
-        activeStatus: true,
+      supplierName: supplierDetails.supplierName,
+      legalName: supplierDetails.legalName,
+      supplierEmail: supplierDetails.supplierEmail,
+      supplierGstNumber: supplierDetails.supplierGstNumber,
+      supplierPanNumber: supplierDetails.supplierPanNumber,
+      products,
+      productLocations,
+      contacts,
+      bankDetails: bank,
+      activeStatus: true,
     };
 
     // Append the data as JSON string
@@ -282,36 +273,33 @@ const AddSupplier = () => {
     console.log("FormData being sent:", formData);
 
     try {
-        const response = await axios.post(
-            "http://localhost:3000/api/supplier",  // Backend URL
-            formData,
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data", // Important for file uploads
-                },
-            }
-        );
+      const response = await axiosInstance.post("supplier", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data", // Important for file uploads
+        },
+      });
 
-        console.log("Response from backend:", response);
+      console.log("Response from backend:", response);
 
-        if (response.status >= 200 && response.status < 300) {
-            alert("Supplier data saved successfully!");
-            navigate("/supplier");
-        } else {
-            alert("Failed to save supplier data!");
-        }
+      if (response.status >= 200 && response.status < 300) {
+        alert("Supplier data saved successfully!");
+        navigate("/supplier");
+      } else {
+        alert("Failed to save supplier data!");
+      }
     } catch (error) {
-        console.error("Error saving supplier data:", error.response ? error.response.data : error);
-        alert(
-            `Error saving supplier data: ${error.response ? error.response.data : error.message}`
-        );
+      console.error(
+        "Error saving supplier data:",
+        error.response ? error.response.data : error
+      );
+      alert(
+        `Error saving supplier data: ${
+          error.response ? error.response.data : error.message
+        }`
+      );
     }
-};
+  };
 
-
-
-
-  
   const handleCancel = () => {};
 
   return (
@@ -351,7 +339,7 @@ const AddSupplier = () => {
         }}
       >
         <Typography
-         className="fs-4"
+          className="fs-4"
           sx={{ marginBottom: "25px", fontWeight: "500" }}
         >
           Supplier Details
@@ -365,8 +353,8 @@ const AddSupplier = () => {
               value={supplierDetails.supplierName}
               onChange={handleSupplierChange}
               sx={{
-                '& .MuiInputBase-input': {
-                  textTransform: 'uppercase',  
+                "& .MuiInputBase-input": {
+                  textTransform: "uppercase",
                 },
               }}
             />
@@ -379,13 +367,13 @@ const AddSupplier = () => {
               value={supplierDetails.legalName}
               onChange={handleSupplierChange}
               sx={{
-                '& .MuiInputBase-input': {
-                  textTransform: 'uppercase',  
+                "& .MuiInputBase-input": {
+                  textTransform: "uppercase",
                 },
               }}
             />
           </Grid>
-       
+
           <Grid item xs={12} sm={4}>
             <TextField
               fullWidth
@@ -414,23 +402,22 @@ const AddSupplier = () => {
             />
           </Grid>
           <Grid item xs={12} sm={4}>
-  <Button
-    variant="outlined"
-    component="label"
-    fullWidth
-    sx={{ justifyContent: "flex-start",height:"55px" }}
-  >
-    {supplierDetails.supplierLogo?.name || "Upload Supplier Logo"}
-    <input
-      type="file"
-      name="supplierLogo"
-      hidden
-      accept="image/*"
-      onChange={handleSupplierChange}
-    />
-  </Button>
-</Grid>
-
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{ justifyContent: "flex-start", height: "55px" }}
+            >
+              {supplierDetails.supplierLogo?.name || "Upload Supplier Logo"}
+              <input
+                type="file"
+                name="supplierLogo"
+                hidden
+                accept="image/*"
+                onChange={handleSupplierChange}
+              />
+            </Button>
+          </Grid>
         </Grid>
       </Box>
 
@@ -450,10 +437,10 @@ const AddSupplier = () => {
             alignItems: "center",
           }}
         >
-         <Typography
-         className="fs-4"
-          sx={{ marginBottom: "25px", fontWeight: "500" }}
-        >
+          <Typography
+            className="fs-4"
+            sx={{ marginBottom: "25px", fontWeight: "500" }}
+          >
             Products Details
           </Typography>
 
@@ -578,7 +565,7 @@ const AddSupplier = () => {
                       </Select>
                     </FormControl>
                   </Grid>
-                   <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={4}>
                     <TextField
                       fullWidth
                       label="Zip Code"
@@ -592,7 +579,7 @@ const AddSupplier = () => {
                         )
                       }
                     />
-                  </Grid> 
+                  </Grid>
                   <Grid item xs={12} sm={4} sx={{ display: "flex" }}>
                     <IconButton
                       onClick={() => addLocation(product._id)}
@@ -659,10 +646,10 @@ const AddSupplier = () => {
             alignItems: "center",
           }}
         >
-         <Typography
-         className="fs-4"
-          sx={{ marginBottom: "25px", fontWeight: "500" }}
-        >
+          <Typography
+            className="fs-4"
+            sx={{ marginBottom: "25px", fontWeight: "500" }}
+          >
             Bank Details
           </Typography>
           <Button
@@ -774,7 +761,7 @@ const AddSupplier = () => {
                     handleBankChange(index, "accountNumber", e.target.value)
                   }
                 />
-              </Grid> 
+              </Grid>
 
               {/* Pre, Middle, and Post Numbers */}
               <Grid item xs={12} sm={4}>
@@ -844,16 +831,8 @@ const AddSupplier = () => {
 
               {/* Buttons */}
               <Grid item xs={12} sm={4} sx={{ display: "flex" }}>
-                <Button
-                  variant="outlined"
-                  color="success"
-                  sx={{ marginRight: "5px" }}
-                >
-                  Your Customer Code
-                </Button>
-                <Button variant="outlined" color="success">
-                  <strong>058520</strong>
-                </Button>
+                
+                
               </Grid>
             </Grid>
 
@@ -898,10 +877,10 @@ const AddSupplier = () => {
             alignItems: "center",
           }}
         >
-         <Typography
-         className="fs-4"
-          sx={{ marginBottom: "25px", fontWeight: "500" }}
-        >
+          <Typography
+            className="fs-4"
+            sx={{ marginBottom: "25px", fontWeight: "500" }}
+          >
             Contact Details
           </Typography>
           <Button
@@ -1014,4 +993,3 @@ const AddSupplier = () => {
 };
 
 export default AddSupplier;
-

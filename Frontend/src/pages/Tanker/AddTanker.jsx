@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowBack, Add } from "@mui/icons-material";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function AddTanker() {
   const [fetchproducts, setFetchProducts] = useState([]);
@@ -27,11 +28,12 @@ function AddTanker() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [productsResponse, driversResponse,transportersResponse] = await Promise.all([
-          axios.get("http://localhost:3000/api/products/"),
-          axios.get("http://localhost:3000/api/drivers/"),
-          axios.get("http://localhost:3000/api/transporters/"),
-        ]);
+        const [productsResponse, driversResponse, transportersResponse] =
+          await Promise.all([
+            axiosInstance.get("/products/"),
+            axiosInstance.get("/drivers/"),
+            axiosInstance.get("/transporters/"),
+          ]);
 
         console.log(driversResponse);
 
@@ -48,7 +50,6 @@ function AddTanker() {
         } else {
           console.error("drivers response data is not an array");
         }
-
 
         if (Array.isArray(transportersResponse.data)) {
           setFetchTransporters(transportersResponse.data);
@@ -87,18 +88,23 @@ function AddTanker() {
     }));
   };
 
-
   const documentValidityPeriods = {
     "PUC (Pollution Under Control)": ["6 months", "1 year"], // 6 months, 1 year
     Insurance: 12, // 1 year
     "CLL (Carriers Legal Liability)": 12, // 1 year
     "Road Tax": ["3 months", "6 months", "1 year", "lifetime"],
-    "Permit": ["5 years", "8 years"],// 5 years, 8 years (in months)
-    "Fitness Certificate (Rule 62)": ["1 year", "2 years"],// 1 year, 2 years
+    Permit: ["5 years", "8 years"], // 5 years, 8 years (in months)
+    "Fitness Certificate (Rule 62)": ["1 year", "2 years"], // 1 year, 2 years
     GPS: 12, // 1 year
     "RC Book (Registration Certificate)": "lifetime", // Lifetime validity
     "Rule 18": 12, // 1 year
-    "Rule 9 (PESO Licence)": ["1 year", "2 years", "3 years", "4 years", "5 years"],    // 1 to 5 years (in months)
+    "Rule 9 (PESO Licence)": [
+      "1 year",
+      "2 years",
+      "3 years",
+      "4 years",
+      "5 years",
+    ], // 1 to 5 years (in months)
     "COC (Rule 13)": "lifetime", // Lifetime validity
     "Rule 43": "lifetime", // Lifetime validity
     "Rule 19": 60, // 5 year
@@ -106,49 +112,61 @@ function AddTanker() {
     "Fabrication Drawing": "lifetime", // Lifetime validity
     "Fire Extinguisher": 12, // 1 year
   };
-  
-
 
   const handledocumentChange = (index, field, value) => {
     const updatedDocuments = [...document];
     const documentToUpdate = updatedDocuments[index];
-    
+
     documentToUpdate[field] = value;
-  
+
     const validity = documentValidityPeriods[documentToUpdate.documentType];
-  
+
     // Handle "documentType" change
     if (field === "documentType") {
-      if (["PUC (Pollution Under Control)", "Fitness Certificate (Rule 62)", "Permit", "Rule 9 (PESO Licence)", "Road Tax"].includes(value)) {
+      if (
+        [
+          "PUC (Pollution Under Control)",
+          "Fitness Certificate (Rule 62)",
+          "Permit",
+          "Rule 9 (PESO Licence)",
+          "Road Tax",
+        ].includes(value)
+      ) {
         documentToUpdate.validityPeriod = ""; // Reset validity period for dropdown selection
         documentToUpdate.validUpto = ""; // Reset `validUpto`
       } else if (typeof validity === "number" && documentToUpdate.validFrom) {
         const validFromDate = new Date(documentToUpdate.validFrom);
         if (!isNaN(validFromDate.getTime())) {
           validFromDate.setMonth(validFromDate.getMonth() + validity);
-          documentToUpdate.validUpto = validFromDate.toISOString().split("T")[0];
+          documentToUpdate.validUpto = validFromDate
+            .toISOString()
+            .split("T")[0];
         } else {
-          console.warn("Invalid 'validFrom' date for documentType calculation.");
+          console.warn(
+            "Invalid 'validFrom' date for documentType calculation."
+          );
         }
       } else {
         documentToUpdate.validUpto = "2999-12-31"; // Default for "lifetime"
       }
     }
-  
+
     // Handle "validFrom" change
     if (field === "validFrom" && documentToUpdate.documentType) {
       if (typeof validity === "number") {
         const validFromDate = new Date(value);
         if (!isNaN(validFromDate.getTime())) {
           validFromDate.setMonth(validFromDate.getMonth() + validity);
-          documentToUpdate.validUpto = validFromDate.toISOString().split("T")[0];
+          documentToUpdate.validUpto = validFromDate
+            .toISOString()
+            .split("T")[0];
         } else {
           console.warn("Invalid 'validFrom' date.");
           documentToUpdate.validUpto = ""; // Clear invalid date
         }
       }
     }
-  
+
     // Handle validity period dropdown selection
     if (field === "validityPeriod") {
       if (value === "lifetime") {
@@ -158,20 +176,27 @@ function AddTanker() {
         if (!isNaN(validFromDate.getTime())) {
           const [amount, unit] = value.split(" ");
           if (unit === "months") {
-            validFromDate.setMonth(validFromDate.getMonth() + parseInt(amount, 10));
+            validFromDate.setMonth(
+              validFromDate.getMonth() + parseInt(amount, 10)
+            );
           } else if (unit === "year" || unit === "years") {
-            validFromDate.setFullYear(validFromDate.getFullYear() + parseInt(amount, 10));
+            validFromDate.setFullYear(
+              validFromDate.getFullYear() + parseInt(amount, 10)
+            );
           }
-          documentToUpdate.validUpto = validFromDate.toISOString().split("T")[0];
+          documentToUpdate.validUpto = validFromDate
+            .toISOString()
+            .split("T")[0];
         } else {
-          console.warn("Invalid 'validFrom' date for validityPeriod calculation.");
+          console.warn(
+            "Invalid 'validFrom' date for validityPeriod calculation."
+          );
         }
       }
     }
-  
+
     setDocument(updatedDocuments);
   };
-  
 
   // Add a new document detail
   const adddocument = () => {
@@ -180,15 +205,14 @@ function AddTanker() {
       { documentType: "", validFrom: "", validUpto: "", documentFile: "" },
     ]);
   };
-  
+
   // Remove a document detail
   const removedocument = (index) => {
     const updateddocument = document.filter((_, i) => i !== index);
     setDocument(updateddocument);
   };
-  
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
 
   const handleSave = async () => {
     const tankerDetails = {
@@ -209,11 +233,11 @@ function AddTanker() {
         documentFile: doc.documentFile,
       })),
     };
-  
+
     console.log("Structured Tanker Details (Before FormData):", tankerDetails);
-  
+
     const formData = new FormData();
-  
+
     // Add regular fields
     formData.append("transporterName", tankerData.transporterName);
     formData.append("tankerNumber", tankerData.tankerNumber);
@@ -225,7 +249,7 @@ function AddTanker() {
     formData.append("chassisNumber", tankerData.chassisNumber);
     formData.append("engineNumber", tankerData.engineNumber);
     formData.append("numberOfAxle", tankerData.numberOfAxle);
-  
+
     // Check if documents exist and are valid
     if (document.length > 0 && document.some((doc) => doc.documentFile)) {
       // Convert document metadata to JSON string and append
@@ -239,7 +263,7 @@ function AddTanker() {
       if (documentMetadata.length > 0) {
         formData.append("documents", JSON.stringify(documentMetadata));
       }
-  
+
       // Add files under the same key ("documents")
       document.forEach((doc) => {
         if (doc.documentFile) {
@@ -247,24 +271,20 @@ function AddTanker() {
         }
       });
     }
-  
+
     // Log FormData entries
     console.log("FormData Entries:");
     for (let pair of formData.entries()) {
       console.log(pair[0], pair[1]); // Log key-value pairs
     }
-  
+
     // Send the request
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/tankers",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axiosInstance.post("/tankers", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       navigate("/tanker");
       console.log("Response:", response.data);
     } catch (error) {
@@ -274,14 +294,6 @@ function AddTanker() {
       );
     }
   };
-  
-  
-  
-  
-
-
-
-
 
   return (
     <Box p={3}>
@@ -321,8 +333,7 @@ function AddTanker() {
             Tanker Details
           </Typography>
           <Grid container spacing={2}>
-          <Grid item xs={12} sm={3}>
-             
+            <Grid item xs={12} sm={3}>
               <FormControl fullWidth>
                 <InputLabel>Transporter Name</InputLabel>
                 <Select
@@ -332,14 +343,13 @@ function AddTanker() {
                     handleTankerChange("transporterName", e.target.value)
                   }
                   name="transporterName"
-                  
                 >
                   {fetchtransporters.map((transporter, index) => (
                     <MenuItem key={index} value={transporter.transporterName}>
                       {transporter.transporterName}
                     </MenuItem>
                   ))}
-                </Select>          
+                </Select>
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={3}>
@@ -492,7 +502,7 @@ function AddTanker() {
             }}
           >
             <Typography
-             className="fs-4"
+              className="fs-4"
               sx={{ marginBottom: "20px", fontWeight: "500" }}
             >
               Document Details
@@ -524,15 +534,19 @@ function AddTanker() {
                   flex: 1,
                 }}
               >
-                 
-
                 <FormControl fullWidth sx={{ flex: 1 }}>
                   <InputLabel>Document Type</InputLabel>
                   <Select
                     label="Document Type"
                     name="documentType"
                     value={tanker.documentType || ""}
-                    onChange={(e) => handledocumentChange(index, "documentType", e.target.value)}
+                    onChange={(e) =>
+                      handledocumentChange(
+                        index,
+                        "documentType",
+                        e.target.value
+                      )
+                    }
                   >
                     {Object.keys(documentValidityPeriods).map((type) => (
                       <MenuItem key={type} value={type}>
@@ -542,32 +556,45 @@ function AddTanker() {
                   </Select>
                 </FormControl>
                 <TextField
-                    type="date"
-                    label="Valid From"
-                    InputLabelProps={{ shrink: true }}
-                    onChange={(e) => handledocumentChange(index, "validFrom", e.target.value)}
-                    value={document[index]?.validFrom || ""}
-                    sx={{ flex: 1 }}
-                  />
+                  type="date"
+                  label="Valid From"
+                  InputLabelProps={{ shrink: true }}
+                  onChange={(e) =>
+                    handledocumentChange(index, "validFrom", e.target.value)
+                  }
+                  value={document[index]?.validFrom || ""}
+                  sx={{ flex: 1 }}
+                />
 
-                {documentValidityPeriods[tanker.documentType] && Array.isArray(documentValidityPeriods[tanker.documentType]) && (
-                  <FormControl fullWidth sx={{ flex: 1 }}>
-                    <InputLabel>Validity Period</InputLabel>
-                    <Select
-                      label="Validity Period"
-                      name="validityPeriod"
-                      value={tanker.validityPeriod || ""}
-                      onChange={(e) => handledocumentChange(index, "validityPeriod", e.target.value)}
-                    >
-                      {documentValidityPeriods[tanker.documentType].map((option) => (
-                        <MenuItem key={option} value={option}>
-                          {option}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                )}
-                 
+                {documentValidityPeriods[tanker.documentType] &&
+                  Array.isArray(
+                    documentValidityPeriods[tanker.documentType]
+                  ) && (
+                    <FormControl fullWidth sx={{ flex: 1 }}>
+                      <InputLabel>Validity Period</InputLabel>
+                      <Select
+                        label="Validity Period"
+                        name="validityPeriod"
+                        value={tanker.validityPeriod || ""}
+                        onChange={(e) =>
+                          handledocumentChange(
+                            index,
+                            "validityPeriod",
+                            e.target.value
+                          )
+                        }
+                      >
+                        {documentValidityPeriods[tanker.documentType].map(
+                          (option) => (
+                            <MenuItem key={option} value={option}>
+                              {option}
+                            </MenuItem>
+                          )
+                        )}
+                      </Select>
+                    </FormControl>
+                  )}
+
                 <TextField
                   label="Valid Upto"
                   type="date"
@@ -625,25 +652,24 @@ function AddTanker() {
             </Box>
           ))}
         </form>
-         {/* Action Buttons */}
-      <Box mt={3} display="flex" justifyContent="center" gap={2}>
-        <Button variant="contained" color="primary" onClick={handleSave}>
-          Save
-        </Button>
-        <Button variant="outlined" color="error">
-          Cancel
-        </Button>
+        {/* Action Buttons */}
+        <Box mt={3} display="flex" justifyContent="center" gap={2}>
+          <Button variant="contained" color="primary" onClick={handleSave}>
+            Save
+          </Button>
+          <Button variant="outlined" color="error">
+            Cancel
+          </Button>
+        </Box>
       </Box>
-      </Box>
-     
     </Box>
   );
 }
 
 export default AddTanker;
 
-
-{/* <FormControl fullWidth sx={{ flex: 1 }}>
+{
+  /* <FormControl fullWidth sx={{ flex: 1 }}>
                   <InputLabel>Document Type</InputLabel>
                   <Select
                     value={document[index]?.documentType || ""}
@@ -691,8 +717,10 @@ export default AddTanker;
                       Fire Extinguisher
                     </MenuItem>
                   </Select>
-                </FormControl> */}
-                {/* <FormControl fullWidth sx={{ flex: 1 }}>
+                </FormControl> */
+}
+{
+  /* <FormControl fullWidth sx={{ flex: 1 }}>
             <InputLabel>Document Type</InputLabel>
             <Select
              label="Document Type"
@@ -708,4 +736,5 @@ export default AddTanker;
                 </MenuItem>
               ))}
             </Select>
-          </FormControl> */}
+          </FormControl> */
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+// import axios from "axios";
 import {
   Table,
   TableBody,
@@ -13,14 +13,15 @@ import {
   Box,
   Typography,
   IconButton,
-  Switch,
+  // Switch,
 } from "@mui/material";
 import { Edit, Add } from "@mui/icons-material";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
-import { FaEye } from "react-icons/fa";
+// import { FaEye } from "react-icons/fa";
 import { LuArrowDownUp } from "react-icons/lu";
-import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
+// import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
 
 function Order() {
   // State for order data
@@ -31,7 +32,22 @@ function Order() {
   const rowsPerPage = 5;
 
   const navigate = useNavigate();
+  useEffect(() => {
+    axiosInstance
+      .get("/orders")
+      .then((response) => {
+        if (Array.isArray(response.data)) {
+          setOrder(response.data);
+        } else {
+          console.error("Received data is not an array");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching Customer:", error);
+      });
+  }, []);
 
+  console.log(order);
 
   // filter/search/pagination/datetime format
   // Sorting states
@@ -47,8 +63,11 @@ function Order() {
   const filteredTankers = order
     .filter((orders) => {
       const matchesSearchQuery =
-        orders.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (orders.companyName || "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
         (order.createDate && order.createDate.includes(searchQuery));
+
       const matchesStatus =
         statusFilter === null || orders.activeStatus === statusFilter;
 
@@ -240,7 +259,7 @@ function Order() {
                   </IconButton>
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: "bold" }}>
-                 Stage
+                  Stage
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: "bold" }}>
                   Action
@@ -249,36 +268,49 @@ function Order() {
             </TableHead>
             <TableBody>
               {order.length === 0 ? (
-                // Show loader when no suppliers are available
                 <TableRow>
-                  <TableCell colSpan={4} align="center">
-                    {/* <AnimatedLogoLoader /> */}
+                  <TableCell colSpan={7} align="center">
+                    <Typography variant="subtitle1" color="textSecondary">
+                      No orders available.
+                    </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
                 paginatedorder.map((orders) => (
                   <TableRow key={orders.id}>
-                    <TableCell align="center"></TableCell>
-                    <TableCell align="center"></TableCell>
-                    <TableCell align="center"></TableCell>
-                    <TableCell align="center"></TableCell>
-                    <TableCell align="center"></TableCell>
                     <TableCell align="center">
-                      {formatDate(orders.createDate)}
+                      {orders.orderNumber || "N/A"}
                     </TableCell>
-
                     <TableCell align="center">
-                      <Link to="/viewCompany">
-                        {/* // {`/supplierdetalils/${supplier.id}`} */}
-                        <IconButton color="dark">
-                          <FaEye />
-                        </IconButton>
-                      </Link>
-                      <Link to={`/editCompany/${orders.id}`}>
-                        <IconButton color="dark">
-                          <Edit />
-                        </IconButton>
-                      </Link>
+                      {orders.orderDateTime
+                        ? formatDate(orders.orderDateTime)
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {orders.customerName || "N/A"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {orders.supplierName || "N/A"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {orders.productName || "N/A"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {orders.stage || "N/A"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {/* <IconButton
+            color="primary"
+            onClick={() => navigate(`/viewOrder/${orders.id}`)}
+          >
+            <FaEye />
+          </IconButton> */}
+                      <IconButton
+                        color="primary"
+                        onClick={() => navigate(`/editOrder/${orders.id}`)}
+                      >
+                        <Edit />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))

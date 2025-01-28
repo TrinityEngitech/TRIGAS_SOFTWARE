@@ -12,6 +12,8 @@ exports.create = async ({
   drivingLicenseFile,
   aadharCardNumber,
   aadharCardFile,
+  driverAdditionalNumber,
+  driverAdditionalName,
   pccNumber,
   pccFile,
   activeStatus, // Can be undefined or null
@@ -36,6 +38,8 @@ exports.create = async ({
       aadharCardNumber,
       aadharCardFile: finalAadharCardFile,  // Will be null if no file is provided
       pccNumber,
+      driverAdditionalName,
+      driverAdditionalNumber,
       pccFile: finalPccFile,  // Will be null if no file is provided
       activeStatus: finalActiveStatus,  // Default to true if not provided
     },
@@ -95,6 +99,8 @@ exports.update = async (
     aadharCardNumber,
     pccNumber,
     drivingLicense,
+    driverAdditionalNumber,
+    driverAdditionalName,
     activeStatus,
     drivingLicenseFile,
     aadharCardFile,
@@ -132,6 +138,8 @@ if (age !== undefined && age !== null && age !== "") {
     drivingLicense,
     activeStatus,
     drivingLicenseFile,
+    driverAdditionalNumber,
+    driverAdditionalName,
     aadharCardFile,
     pccFile,
     age: age !== "" && !isNaN(parseInt(age)) ? parseInt(age) : null,
@@ -149,6 +157,14 @@ if (age !== undefined && age !== null && age !== "") {
   
   if (managerNumber !== undefined && managerNumber !== null && managerNumber !== "") {
     updateData.managerNumber = managerNumber;
+  }
+
+  if (driverAdditionalNumber !== undefined && driverAdditionalNumber !== null && driverAdditionalNumber !== "") {
+    updateData.driverAdditionalNumber = driverAdditionalNumber;
+  }
+
+  if (driverAdditionalName !== undefined && driverAdditionalName !== null && driverAdditionalName !== "") {
+    updateData.driverAdditionalName = driverAdditionalName;
   }
 //   If you want to handle files, you can do that in the controller before passing data to the model.
 

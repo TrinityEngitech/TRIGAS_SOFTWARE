@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-  TextField,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
+
   Button,
   Grid,
   Box,
@@ -14,6 +10,7 @@ import {
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function DriverDetalis() {
   const navigate = useNavigate();
@@ -24,7 +21,7 @@ function DriverDetalis() {
     // Fetch driver data by ID when the component mounts
     const fetchDriver = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/drivers/${id}`);
+        const response = await axiosInstance.get(`/drivers/${id}`);
         console.log(response.data);
         setDriver(response.data); // Set driver data to state
       } catch (err) {
@@ -35,9 +32,9 @@ function DriverDetalis() {
     fetchDriver();
   }, [id]);
 
-  if (!driver) {
-    return <AnimatedLogoLoader />
-  }
+    if (!driver) {
+      return <AnimatedLogoLoader />
+    }
 
   return (
     <Box p={3} >
@@ -90,10 +87,10 @@ function DriverDetalis() {
               <strong>Manager Number:</strong> {driver.managerNumber}
             </Typography>
             <Typography sx={{ marginBottom: 2 }}>
-              <strong>Create Date:</strong> {new Date(driver.createDate).toLocaleString()}
+              <strong>Additional Number</strong> {driver.driverAdditionalNumber}
             </Typography>
             <Typography sx={{ marginBottom: 2 }}>
-              <strong>Updated Date:</strong> {new Date(driver.updatedDate).toLocaleString()}
+              <strong>Additional Number Person Name</strong> {driver.driverAdditionalName}
             </Typography>
             <Typography sx={{ marginBottom: 2 }}>
               <strong>Status:</strong> {driver.activeStatus ? "Active" : "Inactive"}
@@ -102,6 +99,12 @@ function DriverDetalis() {
 
           {/* Right Column */}
           <Grid item xs={12} sm={6}>
+          <Typography sx={{ marginBottom: 2 }}>
+              <strong>Create Date:</strong> {new Date(driver.createDate).toLocaleString()}
+            </Typography>
+            <Typography sx={{ marginBottom: 2 }}>
+              <strong>Updated Date:</strong> {new Date(driver.updatedDate).toLocaleString()}
+            </Typography>
             <Typography sx={{ marginBottom: 2 }}>
               <strong>Driving License Number:</strong> {driver.drivingLicense}
             </Typography>

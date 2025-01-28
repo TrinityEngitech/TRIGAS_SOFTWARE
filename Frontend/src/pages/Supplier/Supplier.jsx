@@ -1,4 +1,4 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -14,14 +14,17 @@ import {
   Pagination,
   Box,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import { Edit, Add } from "@mui/icons-material";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import { FaEye } from "react-icons/fa";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import { LuArrowDownUp } from "react-icons/lu";
 import axios from "axios"; // Import axios for API calls
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function Supplier() {
   const navigate = useNavigate();
@@ -35,7 +38,7 @@ function Supplier() {
   // Fetch supplier data from API
   useEffect(() => {
     const fetchSuppliers = async () => {
-      const response = await axios.get("http://localhost:3000/api/supplier"); // Update this with the actual API endpoint
+      const response = await axiosInstance.get("/supplier"); // Update this with the actual API endpoint
       console.log(response.data);
 
       setSuppliers(response.data); // Set the data to state
@@ -47,8 +50,8 @@ function Supplier() {
   const handleToggleActive = async (suppliersId, currentStatus) => {
     try {
       // Toggle the activeStatus in the request body
-      const response = await axios.put(
-        `http://localhost:3000/api/supplier/toggle-status/${suppliersId}`,
+      const response = await axiosInstance.put(
+        `h/supplier/toggle-status/${suppliersId}`,
         { activeStatus: !currentStatus } // Send the toggled status in the request body
       );
 
@@ -270,7 +273,9 @@ function Supplier() {
                   paginatedsuppliers.map((supplier) => (
                     <TableRow key={supplier.id}>
                       <TableCell align="center">{supplier.name}</TableCell>
-                      <TableCell align="center">{formatDate(supplier.createDate)}</TableCell>
+                      <TableCell align="center">
+                        {formatDate(supplier.createDate)}
+                      </TableCell>
 
                       <TableCell align="center">
                         <Switch
@@ -294,7 +299,16 @@ function Supplier() {
                           <IconButton>
                             <Edit />
                           </IconButton>
-                        </Link>
+                          </Link>
+                          <Link to={`/DOSO_Number/${supplier.id}`}>
+                          {/* <Link to="/DOSO_Number"> */}
+                            <Tooltip title="DOSO Number" arrow>
+                              <IconButton color="dark">
+                                <InsertDriveFileIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </Link>
+                       
                       </TableCell>
                     </TableRow>
                   ))
@@ -304,12 +318,12 @@ function Supplier() {
           </TableContainer>
 
           <Box mt={3} display="flex" justifyContent="center">
-          <Pagination
-            count={Math.ceil(suppliers.length / rowsPerPage)}
-            page={currentPage}
-            onChange={handlePageChange}
-          />
-        </Box>
+            <Pagination
+              count={Math.ceil(suppliers.length / rowsPerPage)}
+              page={currentPage}
+              onChange={handlePageChange}
+            />
+          </Box>
         </Box>
       </Box>
     </div>

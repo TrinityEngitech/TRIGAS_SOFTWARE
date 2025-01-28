@@ -56,7 +56,10 @@ const prisma = new PrismaClient();
 
 exports.createEmployee = async (req, res) => {
   try {
-    const { empName, empEmail, empPhone, empRole, teamRole, teamId, activeStatus } = req.body;
+    const { empName, empEmail, empPhone, empRole,empAadharNumber,empAdditionalNumber,
+      empAdditionalName,joiningDate,
+      relievingDate, teamRole, teamId, activeStatus } = req.body;
+      console.log(req.body);
 
     // Fetch the team details by teamId
     const team = await prisma.teamManagement.findUnique({
@@ -73,6 +76,11 @@ exports.createEmployee = async (req, res) => {
       empEmail,
       empPhone,
       empRole,
+      empAadharNumber,
+      empAdditionalNumber,
+      empAdditionalName,
+      joiningDate: new Date(joiningDate), // Ensure date is properly formatted
+        relievingDate: relievingDate ? new Date(relievingDate) : null,
       teamRole,          // Include teamRole
       teamName: team.teamName, // Use the teamName from the TeamManagement record
       teamId,
@@ -219,6 +227,11 @@ exports.updateEmployee = async (req, res) => {
       empEmail,
       empPhone,
       empRole,
+      empAadharNumber,
+      empAdditionalNumber,
+      empAdditionalName,
+      joiningDate,
+      relievingDate,
       teamName,
       teamLeaderName,
       teamId,
@@ -246,6 +259,11 @@ exports.updateEmployee = async (req, res) => {
         empPhone,
         empRole: "Team Leader", // Force the role to Team Leader
         teamName,
+        empAadharNumber,
+        empAdditionalNumber,
+        empAdditionalName,
+        joiningDate: new Date(joiningDate), // Ensure date is properly formatted
+        relievingDate: relievingDate ? new Date(relievingDate) : null,
         teamLeaderName: empName, // Set the new leader's name
         teamId,
         teamRole,

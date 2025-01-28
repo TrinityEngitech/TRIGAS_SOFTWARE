@@ -19,8 +19,11 @@ router.put('/:id', upload.array('documents'), updateTankerDetails);
 // router.put('/toggle/:id', toggleTankerStatus);
 router.delete('/:id', deleteTankerDetails);
 router.delete('/documents/:id', documentDelete);
-// router.put("/toggle/:id", toggleTankerStatus);
+
+
+router.put('/toggle/:id', toggleTankerStatus);
 
 module.exports = router;
+
 
 

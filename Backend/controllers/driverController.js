@@ -14,6 +14,8 @@ exports.createDriver = async (req, res) => {
       drivingLicense,
       aadharCardNumber,
       pccNumber,
+      driverAdditionalNumber,
+      driverAdditionalName,
       activeStatus, // This can be optional
     } = req.body;
 
@@ -56,6 +58,8 @@ exports.createDriver = async (req, res) => {
       drivingLicense, // Ensure this is required
       aadharCardNumber, // Allow aadharCardNumber to be optional
       pccNumber, // Allow pccNumber to be optional
+      driverAdditionalName,
+      driverAdditionalNumber,
       activeStatus: isActive, // If not provided, Prisma will default it to true
       drivingLicenseFile: files.drivingLicenseFile, // Optional file (empty string if not provided)
       aadharCardFile: files.aadharCardFile, // Optional file (empty string if not provided)
@@ -366,6 +370,8 @@ exports.updateDriver = async (req, res) => {
       managerNumber,
       aadharCardNumber,
       pccNumber,
+      driverAdditionalNumber,
+      driverAdditionalName,
       drivingLicense,
       activeStatus,
     } = req.body;
@@ -382,6 +388,8 @@ exports.updateDriver = async (req, res) => {
       ...(managerNumber !== undefined ? { managerNumber: managerNumber || null } : {}),
       ...(aadharCardNumber && { aadharCardNumber }),
       ...(pccNumber && { pccNumber }),
+      ...(driverAdditionalNumber !== undefined ? { driverAdditionalNumber: driverAdditionalNumber || null } : {}),
+      ...(driverAdditionalName !== undefined ? { driverAdditionalName: driverAdditionalName || null } : {}),
       ...(drivingLicense && { drivingLicense }),
       ...(activeStatus !== undefined && { activeStatus: activeStatus === "true" || activeStatus === true }),
       ...(drivingLicenseFile && { drivingLicenseFile: `uploads/${drivingLicenseFile}` }),

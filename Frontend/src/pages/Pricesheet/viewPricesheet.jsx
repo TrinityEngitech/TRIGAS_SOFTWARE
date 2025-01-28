@@ -22,6 +22,7 @@ import axios from "axios";
 import logo from "../../assets/Logo/black.png";
 import no from "../../assets/Logo/no.png";
 import check from "../../assets/Logo/check.png";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 import { handleDownloadImage } from "./imageUtils";
 
@@ -48,9 +49,7 @@ const ViewPricesheet = () => {
     const fetchPricesheetData = async () => {
       setLoading(true); // Start loading before fetching
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/price-sheets/${id}`
-        ); // Fetch with the dynamic `id`
+        const response = await axiosInstance.get(`/price-sheets/${id}`); // Fetch with the dynamic `id`
 
         // Update all state values in one go
         setPriceSheet({
@@ -379,7 +378,7 @@ const ViewPricesheet = () => {
                                 justifyContent="center"
                               >
                                 {/* Supplier Logo */}
-                                <img
+                                {/* <img
                                   src={
                                     entry.supplierLogo ||
                                     "https://i.pinimg.com/736x/b2/f9/33/b2f93328dedc3d7c86967e492aa03b39.jpg" // Fallback placeholder logo
@@ -391,7 +390,7 @@ const ViewPricesheet = () => {
                                     borderRadius: "50%",
                                     marginRight: "8px",
                                   }}
-                                />
+                                /> */}
                                 {/* Supplier Name */}
                                 <Typography sx={{ marginTop: "5px" }}>
                                   {entry.supplierName}

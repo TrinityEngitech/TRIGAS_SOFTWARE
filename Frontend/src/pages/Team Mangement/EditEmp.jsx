@@ -14,6 +14,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import axios from "axios";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function EditEmp() {
    const [loading, setLoading] = useState(true);
@@ -22,6 +23,11 @@ function EditEmp() {
     empName: "",
     empEmail: "",
     empPhone: "",
+    empAadharNumber:"",
+    empAdditionalNumber:"",
+    empAdditionalName:"",
+    joiningDate:"",
+    relievingDate:"",
     teamRole: "",
     teamId: "",
     empRole: "",
@@ -41,8 +47,8 @@ function EditEmp() {
     const fetchData = async () => {
       try {
         const [teamsResponse, rolesResponse] = await Promise.all([
-          axios.get("http://localhost:3000/api/teams"),
-          axios.get("http://localhost:3000/api/roles"),
+          axiosInstance.get("/teams"),
+          axiosInstance.get("/roles"),
         ]);
 
         if (Array.isArray(teamsResponse.data)) setTeams(teamsResponse.data);
@@ -61,7 +67,7 @@ function EditEmp() {
     if (isEdit) {
       const fetchEmployeeData = async () => {
         try {
-          const response = await axios.get(`http://localhost:3000/api/employees/${id}`);
+          const response = await axiosInstance.get(`/employees/${id}`);
           setFormData(response.data);
         } catch (error) {
           console.error("Error fetching employee data:", error);
@@ -92,11 +98,11 @@ function EditEmp() {
     try {
       if (isEdit) {
         // Update Employee
-        await axios.put(`http://localhost:3000/api/employees/${id}`, formData);
+        await axiosInstance.put(`/employees/${id}`, formData);
         console.log("Employee updated successfully!");
       } else {
         // Add Employee
-        await axios.post("http://localhost:3000/api/employees", formData);
+        await axiosInstance.post("/employees", formData);
         console.log("Employee added successfully!");
       }
 
@@ -164,10 +170,68 @@ function EditEmp() {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                label="Aadhar Card"
+                name="empAadharNumber"
+                value={formData.empAadharNumber}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
                 label="Phone Number"
                 name="empPhone"
                 value={formData.empPhone}
                 onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Additional Number"
+                name="empAdditionalNumber"
+                value={formData.empAdditionalNumber}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Additional Number Person Name"
+                name="empAdditionalName"
+                value={formData.empAdditionalName}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Joing Date"
+                name="joiningDate"
+                value={formData.joiningDate}
+                onChange={handleChange}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Relieving Date"
+                name="relievingDate"
+                value={formData.relievingDate}
+                onChange={handleChange}
+                InputLabelProps={{
+                  shrink: true,
+                }}
                 required
               />
             </Grid>

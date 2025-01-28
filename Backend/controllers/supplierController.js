@@ -84,6 +84,88 @@ exports.createSupplier = async (req, res) => {
   }
 };
 
+
+exports.addDoSo = async (req, res) => {
+  try {
+    const { supplierId, doso } = req.body;
+
+    console.log(req.body);
+    
+    // Parse supplierId to ensure it's an integer
+    const supplierIdInt = parseInt(supplierId);
+    if (isNaN(supplierIdInt)) {
+      return res.status(400).json({ message: "Invalid supplierId!" });
+    }
+
+    // Validate input
+    if (!supplierIdInt || !Array.isArray(doso) || doso.length === 0) {
+      return res.status(400).json({ message: "Invalid data format!" });
+    }
+
+    // Step 1: Remove existing DoSo records for this supplierId
+    await prisma.doSo.deleteMany({
+      where: { supplierId: supplierIdInt }, // Use parsed supplierId
+    });
+
+    // Step 2: Prepare data for insertion
+    const newRecords = doso.map(item => ({
+      supplierId: supplierIdInt, // Use parsed supplierId
+      supplierName: item.supplierName,
+      productName: item.productName,
+      loadingPoint: item.loadingPoint,
+      doSoNumber: String(item.doSoNumber), // Convert to string
+      customerName: item.customerName,
+      customerCode: String(item.customerCode),
+      
+      productCode: String(item.productCode)
+    }));
+
+    // Step 3: Insert new records into the database
+    await prisma.doSo.createMany({
+      data: newRecords,
+    });
+
+    return res.status(201).json({ message: "DoSo records updated successfully!" });
+  } catch (error) {
+    console.error("Error updating DoSo records:", error);
+    return res.status(500).json({ message: "Internal server error!" });
+  }
+};
+
+
+
+exports.getDoSoBySupplierId = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Ensure supplierId is valid
+    const supplierIdInt = parseInt(id);
+    if (isNaN(supplierIdInt)) {
+      return res.status(400).json({ message: "Invalid supplierId!" });
+    }
+
+    // Fetch the DoSo records for the supplierId
+    const doSoRecords = await prisma.doSo.findMany({
+      where: { supplierId: supplierIdInt }, // Query based on supplierId
+    });
+
+    if (doSoRecords.length === 0) {
+      return res.status(404).json({ message: "No records found for this supplierId!" });
+    }
+
+    // Return the fetched records
+    return res.status(200).json({
+      message: "DoSo records fetched successfully!",
+      data: doSoRecords, // Send the fetched records
+    });
+  } catch (error) {
+    console.error("Error fetching DoSo records:", error);
+    return res.status(500).json({ message: "Internal server error!" });
+  }
+};
+
+
+
 exports.toggleActiveStatus = async (req, res) => {
   const { id } = req.params;
   const { activeStatus } = req.body; // true or false
@@ -136,6 +218,7 @@ exports.getAllSuppliers = async (req, res) => {
           },
         },
         contacts: true,
+        bankDetails: true,
 
       },
     });
@@ -159,7 +242,8 @@ exports.getSupplierById = async (req, res) => {
           },
         },
         bankDetails:true,
-        contacts: true,
+        contacts: true,   
+        bankDetails: true,   
       },
     });
 

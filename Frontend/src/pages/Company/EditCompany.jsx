@@ -13,6 +13,7 @@ import {
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import axios from "axios";
+import axiosInstance from "../../Authentication/axiosConfig";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
 
 function EditCompany() {
@@ -36,8 +37,8 @@ function EditCompany() {
 
   // Fetch company data by ID when the component loads
   useEffect(() => {
-    axios
-      .get(`http://localhost:3000/api/companies/${id}`)
+    axiosInstance
+      .get(`/companies/${id}`)
       .then((response) => {
         if (response.data) {
           setFormData(response.data); // Populate the form with fetched data
@@ -64,8 +65,8 @@ function EditCompany() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true); // Set loading to true while updating
-    axios
-      .put(`http://localhost:3000/api/companies/${id}`, formData)
+    axiosInstance
+      .put(`/companies/${id}`, formData)
       .then((response) => {
         console.log("Update Response:", response.data);
         alert("Company updated successfully!");

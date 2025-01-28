@@ -17,6 +17,7 @@ import { useNavigate, Link, useParams } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import axios from "axios";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 const SupplierDetails = () => {
   const { id } = useParams(); // Fetch supplier ID from route params
@@ -34,8 +35,8 @@ const SupplierDetails = () => {
       try {
         setIsLoading(true); // Start loading
 
-        const response = await axios.get(
-          `http://localhost:3000/api/supplier/${id}`
+        const response = await axiosInstance.get(
+          `/supplier/${id}`
         );
         const supplier = response.data;
 

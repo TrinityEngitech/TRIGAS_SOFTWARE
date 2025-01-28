@@ -22,8 +22,10 @@ const uploadFiles  = upload.fields([
 
 // CREATE - Add a new supplier
 router.post('/',uploadFiles, supplierController.createSupplier);
+router.post('/addDoSo', supplierController.addDoSo);
 // READ - Get all suppliers
 router.get('/', supplierController.getAllSuppliers);
+router.get('/addDoSo/:id', supplierController.getDoSoBySupplierId);
 
 // READ - Get a single supplier by ID
 router.get('/:id', supplierController.getSupplierById);

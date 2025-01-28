@@ -20,6 +20,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import { LuArrowDownUp } from "react-icons/lu";
 import { FaEye } from "react-icons/fa";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function Transpoter() {
   const [transpoter, setTranspoter] = useState([]);
@@ -48,8 +49,8 @@ function Transpoter() {
   // }, []);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/transporters/")
+    axiosInstance
+      .get("/transporters/")
       .then((response) => {
         console.log(response.data); // Check the structure of the response data
         if (Array.isArray(response.data)) {
@@ -72,8 +73,8 @@ function Transpoter() {
   // Handle toggle change (active status)
   const handleToggleActive = async (transpoterId, currentStatus) => {
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/transporters/toggle/${transpoterId}`
+      const response = await axiosInstance.put(
+        `/transporters/toggle/${transpoterId}`
       );
       console.log("transpoter status toggled:", response.data);
 
@@ -86,7 +87,7 @@ function Transpoter() {
         )
       );
     } catch (error) {
-      console.error("Error toggling driver status:", error);
+      console.error("Error toggling transporter status:", error);
     }
   };
 

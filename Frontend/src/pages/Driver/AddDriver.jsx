@@ -3,6 +3,7 @@ import { TextField, Grid, Button, Box, Typography } from "@mui/material";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import axios from "axios";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function AddDriver() {
   const navigate = useNavigate();
@@ -15,6 +16,8 @@ function AddDriver() {
     managerNumber: "",
     aadharCardNumber: "",
     pccNumber: "",
+    driverAdditionalNumber:"",
+    driverAdditionalName:"",
     drivingLicense: "",
   });
 
@@ -57,6 +60,7 @@ function AddDriver() {
       : "http://localhost:3000/api/drivers/";
   
     const method = isEditing ? "PUT" : "POST";
+  console.log(formData);
   
     try {
       const formDataToSend = new FormData();
@@ -64,6 +68,8 @@ function AddDriver() {
       formDataToSend.append("driverNumber", formData.driverNumber || "");
       formDataToSend.append("aadharCardNumber", formData.aadharCardNumber || "");
       formDataToSend.append("pccNumber", formData.pccNumber || "");
+      formDataToSend.append("driverAdditionalNumber", formData.driverAdditionalNumber || "");
+      formDataToSend.append("driverAdditionalName", formData.driverAdditionalName || "");
       formDataToSend.append("drivingLicense", formData.drivingLicense || "");
       formDataToSend.append("activeStatus", true); // Always true
   
@@ -82,7 +88,7 @@ function AddDriver() {
         formDataToSend.append("pccFile", formData.pccFile);
       }
   
-      const response = await axios({
+      const response = await axiosInstance({
         method,
         url,
         data: formDataToSend,
@@ -176,6 +182,26 @@ function AddDriver() {
                 onChange={handleChange}
                 name="managerNumber"
                 placeholder="Enter manager number or leave blank"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Additional Number"
+                name="driverAdditionalNumber"
+                onChange={handleChange}
+                value={formData.driverAdditionalNumber || ""}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Additional Number Person Name"
+                name="driverAdditionalName"
+                value={formData.driverAdditionalName || ""}
+                onChange={handleChange}
+                required
               />
             </Grid>
             <Grid item xs={12} sm={6}>

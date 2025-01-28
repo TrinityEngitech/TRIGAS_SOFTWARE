@@ -28,6 +28,7 @@ import { FaEye } from "react-icons/fa";
 import EmailIcon from "@mui/icons-material/Email";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import SimCardDownloadIcon from "@mui/icons-material/SimCardDownload";
+import axiosInstance from "../../Authentication/axiosConfig";
 import * as XLSX from "xlsx";
 
 function Pricesheet() {
@@ -56,8 +57,8 @@ function Pricesheet() {
     console.log("Email Address:", modalData.email);
 
     // Example: Send the email to the server
-    axios
-      .post("http://localhost:3000/api/email", { email: modalData.email })
+    axiosInstance
+      .post("/email", { email: modalData.email })
       .then((response) => {
         console.log("Email saved:", response.data);
       })
@@ -74,8 +75,8 @@ function Pricesheet() {
   // Fetch pricesheets from the API
   useEffect(() => {
     setLoading(true); // Start loading
-    axios
-      .get("http://localhost:3000/api/price-sheets")
+    axiosInstance
+      .get("/price-sheets")
       .then((response) => {
         if (Array.isArray(response.data)) {
           setPricesheet(response.data); // Set pricesheets if the response is an array
@@ -130,8 +131,8 @@ function Pricesheet() {
     try {
       const updatedStatus = !currentStatus; // Toggle the status
       // Call the API
-      const response = await axios.patch(
-        `http://localhost:3000/api/price-sheets/${id}/active-status`,
+      const response = await axiosInstance.patch(
+        `/price-sheets/${id}/active-status`,
         { activeStatus: updatedStatus }
       );
 

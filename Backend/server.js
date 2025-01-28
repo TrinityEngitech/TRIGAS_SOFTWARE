@@ -20,6 +20,7 @@ const customerRoutes = require('./routes/customerRoutes');
 const transportationChargeRoutes = require('./routes/transportationChargeRoutes');
 const priceSheetRoutes = require('./routes/priceSheetRoutes');
 const authRoutes = require('./routes/authRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 
 // Middleware
@@ -43,6 +44,7 @@ app.use('/api/drivers', driverRoutes);
 app.use('/api/tankers', tankerRoutes); 
 app.use('/api/transporters', transpoterRoutes); 
 app.use('/api/customers', customerRoutes); 
+app.use('/api/orders', orderRoutes); 
 
 // Transportation Charges Routes
 app.use('/api/transportation-charges', transportationChargeRoutes);

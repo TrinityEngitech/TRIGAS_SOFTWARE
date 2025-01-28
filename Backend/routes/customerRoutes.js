@@ -27,6 +27,7 @@ router.get('/:customerId', customerController.getByidCustomerDetails); // Get cu
 router.get('/ViewCustomerBank/:id', customerController.getCustomerBankDetailsById); // Get customer details by uuid
 
 
+router.put('/toggle/:id', customerController.toggleCustomerStatus); // Update customer details by uuid
 
 module.exports = router;
 

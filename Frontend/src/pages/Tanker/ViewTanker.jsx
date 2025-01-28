@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import { ArrowBack,Delete } from "@mui/icons-material";
 import { FaEye } from "react-icons/fa";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function ViewTanker() {
   const { id } = useParams(); // Extract the ID from the URL
@@ -31,8 +32,8 @@ function ViewTanker() {
 
   // Fetch tanker details by ID
   useEffect(() => {
-    axios
-      .get(`http://localhost:3000/api/tankers/${id}`)
+    axiosInstance
+      .get(`/tankers/${id}`)
       .then((response) => {
         setTanker(response.data); // Set the fetched data to state
         setLoading(false); // Set loading to false once data is fetched
@@ -53,7 +54,7 @@ function ViewTanker() {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(`http://localhost:3000/api/tankers/documents/${id}`);
+      const response = await axiosInstance.delete(`/tankers/documents/${id}`);
       if (response.status === 200) {
         alert("Document deleted successfully");
         // Update your state to remove the deleted document
@@ -147,7 +148,7 @@ function ViewTanker() {
               {new Date(tanker.createDate).toLocaleString()}
             </Typography>
             <Typography sx={{ marginBottom: 2 }}>
-              <strong>Status:</strong>
+              <strong>Status: </strong> 
               {tanker.activeStatus ? "Active" : "Inactive"}
             </Typography>
           </Grid>

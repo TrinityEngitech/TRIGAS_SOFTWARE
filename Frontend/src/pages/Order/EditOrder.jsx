@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import {
   Box,
@@ -20,27 +21,90 @@ import {
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
+import axiosInstance from "../../Authentication/axiosConfig"; // Import the custom Axios instance
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 
+
+import axios from "axios";
+
+
 const initialSteps = [
   "Tanker Allocation",
   "DO/SO Generation",
-  "Tanker Reached",
+  "Tanker Reporting",
   "Tanker Loading",
   "Tanker Status",
   "Tanker Dispatched",
+  "Intermediate Location",
   "Tanker Delivered",
   "Tanker Unloaded",
 ];
 
 function EditOrder() {
+
+  const { id } = useParams(); // Extract the `id` from the route params
+  const [currentCustomer, setCurrentCustomer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  console.log("currentCustomer",currentCustomer);
+
+  const [bookedDateTime, setBookedDateTime] = useState("");
+  
+  
+  
+
+const fetchOrderDetails = async () => {
+  try {
+    setLoading(true);
+    const response = await axios.get(`http://localhost:3000/api/orders/${id}`); // Use axios to fetch data
+    console.log(response.data);
+
+    setCurrentCustomer(response.data);
+    setLoading(false);
+  } catch (err) {
+    setError(err.response?.data?.message || err.message);
+    setLoading(false);
+  }
+};
+
+// Effect to fetch data when component mounts
+useEffect(() => {
+  if (id) {
+    fetchOrderDetails();
+  }
+}, [id]);
+
+
+const handleDateChange = (event) => {
+  setBookedDateTime(event.target.value);
+};
+
+
+const updateBookedDateTime = async () => {
+  try {
+    const response = await axiosInstance.put(`/orders/${id}`, {
+      bookedDateTime: bookedDateTime, // Only updating bookedDateTime
+    });
+
+    if (response.status === 200) {
+      alert("Order Booked Date & Time updated successfully!");
+    }
+  } catch (error) {
+    console.error("Error updating booked date & time:", error);
+  }
+};
+
+
+
+
   const [activeStep, setActiveStep] = useState(0); // Track active step in the initial stepper
   const [isTankerSectionVisible, setTankerSectionVisible] = useState(false); // Control tanker section visibility
   const [tankerList, setTankerList] = useState([
     { id: 1, activeStep: 0, completed: [] },
-  ]); // Track tanker details with steps
+  ]); // Track tanker details with steps 
 
   // Order Detalis step
   const handleInitialNext = () => {
@@ -112,6 +176,7 @@ function EditOrder() {
   };
 
   const navigate = useNavigate();
+  
   return (
     <Box p={3}>
       <Box sx={{ display: "flex" }}>
@@ -190,97 +255,95 @@ function EditOrder() {
               <>
                 <Grid container spacing={1}>
                   <Grid item xs={12} sm={3}>
-                    <FormControl fullWidth>
-                      <InputLabel>Customer</InputLabel>
-                      <Select label="Supplier Name" name="" required>
-                        <MenuItem value="Customer 1">Customer 1</MenuItem>
-                        <MenuItem value="Customer 1">Customer 1</MenuItem>
-                      </Select>
-                    </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>Customer</InputLabel>
+                    <Select
+                      label="Customer"
+                      value={currentCustomer?.customerName || ""}
+                      disabled
+                    >
+                      <MenuItem value={currentCustomer?.customerName || ""}>
+                        {currentCustomer?.customerName || "Loading..."}
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
                   </Grid>
 
                   <Grid item xs={12} sm={3}>
                     <FormControl fullWidth>
-                      <InputLabel>Supplier</InputLabel>
-                      <Select label="Supplier" name="" required>
-                        <MenuItem value="Supplier 1">Supplier 1</MenuItem>
-                        <MenuItem value="Supplier 2">Supplier 2</MenuItem>
-                      </Select>
-                    </FormControl>
+                    <InputLabel>Supplier</InputLabel>
+                    <Select
+                      label="Supplier"
+                      value={currentCustomer?.supplierName || ""}
+                      disabled
+                    >
+                      <MenuItem value={currentCustomer?.supplierName || ""}>
+                        {currentCustomer?.supplierName || "Loading..."}
+                      </MenuItem>
+                    </Select>
+                  </FormControl>                    
                   </Grid>
 
                   <Grid item xs={12} sm={3}>
                     <FormControl fullWidth>
-                      <InputLabel>Supply Location</InputLabel>
-                      <Select label="Supply Location" name="" required>
-                        <MenuItem value="Supply Location 1">
-                          Supply Location 1
-                        </MenuItem>
-                        <MenuItem value="Supply Location 1">
-                          Supply Location 1
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
+                  <InputLabel>Supply Location</InputLabel>
+                  <Select
+                    label="Supply Location"
+                    value={currentCustomer?.supplyLoadingPoint || ""}
+                    disabled
+                  >
+                    <MenuItem value={currentCustomer?.supplyLoadingPoint || ""}>
+                      {currentCustomer?.supplyLoadingPoint || "Loading..."}
+                    </MenuItem>
+                  </Select>
+                </FormControl>
                   </Grid>
 
                   <Grid item xs={12} sm={3}>
+                    
+
                     <FormControl fullWidth>
-                      <InputLabel>Product</InputLabel>
-                      <Select label="Product" name="" required>
-                        <MenuItem value="Product 1">Product 1</MenuItem>
-                        <MenuItem value="Product 1">Product 1</MenuItem>
-                      </Select>
-                    </FormControl>
+                    <InputLabel>Product</InputLabel>
+                    <Select
+                      label="Product"
+                      value={currentCustomer?.productName || ""}
+                      disabled
+                    >
+                      <MenuItem value={currentCustomer?.productName || ""}>
+                        {currentCustomer?.productName || "Loading..."}
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
                   </Grid>
 
                   <Grid item xs={12} sm={3}>
-                    <TextField
-                      fullWidth
-                      label="Quantity(MT)"
-                      name=""
-                      required
-                    />
+                  <TextField
+                    fullWidth
+                    label="Quantity(MT)"
+                    name="productQuantity"
+                    value={currentCustomer?.productQuantity || ""}
+                    disabled
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    required
+                  />
+
                   </Grid>
 
                   <Grid item xs={12} sm={3}>
-                    <FormControl fullWidth>
-                      <InputLabel>Team</InputLabel>
-                      <Select label="Team" name="" required>
-                        <MenuItem value="Team 1">Team 1</MenuItem>
-                        <MenuItem value="Team 1">Team 1</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
+                  <TextField
+                    fullWidth
+                    type="datetime-local"
+                    label="Order Date & Time"
+                    name="orderDateTime"
+                    value={currentCustomer?.orderDateTime ? new Date(currentCustomer.orderDateTime).toISOString().slice(0, 16) : ""}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    disabled
+                  />
 
-                  <Grid item xs={12} sm={3}>
-                    <FormControl fullWidth>
-                      <InputLabel>Created by</InputLabel>
-                      <Select label="Created by" name="" required>
-                        <MenuItem value="Created by 1">Created by 1</MenuItem>
-                        <MenuItem value="Created by 1">Created by 1</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid item xs={12} sm={3}>
-                    <TextField
-                      fullWidth
-                      label="Order Number"
-                      name=""
-                      required
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={3}>
-                    <TextField
-                      fullWidth
-                      type="datetime-local"
-                      label="Order Date & Time"
-                      name=""
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                    />
                   </Grid>
 
                   <Grid item xs={12} sm={3}>
@@ -288,7 +351,8 @@ function EditOrder() {
                       fullWidth
                       type="datetime-local"
                       label="Booked Date & Time"
-                      name=""
+                      onChange={handleDateChange}
+                      name="orderBookDateTime"
                       InputLabelProps={{
                         shrink: true,
                       }}
@@ -301,7 +365,7 @@ function EditOrder() {
             {activeStep === 1 && (
               <>
                 <Grid container spacing={1}>
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
                     <TextField
                       label="Upload File"
                       fullWidth
@@ -311,7 +375,12 @@ function EditOrder() {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
+                    <TextField label="UTR"
+                    name="UTR Number"
+                     fullWidth type="text" />
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
                     <TextField
                       label="Payment Date"
                       fullWidth
@@ -321,9 +390,10 @@ function EditOrder() {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} sm={3}>
                     <TextField label="Amount" fullWidth type="text" />
                   </Grid>
+                 
                 </Grid>
               </>
             )}
@@ -482,17 +552,16 @@ function EditOrder() {
                         // ml: "auto", // Pushes the button to the far right
                         display: "flex",
                         alignItems: "center",
-                        marginRight:"5px"
+                        marginRight: "5px",
                       }}
                     >
                       <CloseIcon />
                       <Typography
                         variant="outlined"
-                        
                         sx={{
                           // ml: 1,
                           color: "error.main",
-                          fontWeight: "bold"
+                          fontWeight: "bold",
                         }}
                       >
                         CLOSE
@@ -511,10 +580,11 @@ function EditOrder() {
                   {[
                     "Tanker Allocation",
                     "DO/SO Generation",
-                    "Tanker Reached",
+                    "Tanker Reporting",
                     "Tanker Loading",
                     "Tanker Status",
                     "Tanker Dispatched",
+                    "Intermediate Location",
                     "Tanker Delivered",
                     "Tanker Unloaded",
                   ].map((label, index) => (
@@ -546,10 +616,11 @@ function EditOrder() {
                       [
                         "Tanker Allocation",
                         "DO/SO Generation",
-                        "Tanker Reached",
+                        "Tanker Reporting",
                         "Tanker Loading",
                         "Tanker Status",
                         "Tanker Dispatched",
+                        "Intermediate Location",
                         "Tanker Delivered",
                         "Tanker Unloaded",
                       ][tanker.activeStep]
@@ -672,7 +743,7 @@ function EditOrder() {
                         <Grid item xs={12} sm={4}>
                           <TextField
                             fullWidth
-                            label="Invoice Weight(Tons)"
+                            label="Remark"
                             name=""
                             required
                           />
@@ -695,6 +766,14 @@ function EditOrder() {
                   {tanker.activeStep === 5 && (
                     <>
                       <Grid container spacing={1}>
+                      <Grid item xs={12} sm={4}>
+                          <TextField
+                            fullWidth
+                            label="Invoice Weight(Tons)"
+                            name=""
+                            required
+                          />
+                        </Grid>
                         <Grid item xs={12} sm={4}>
                           <TextField
                             fullWidth
@@ -710,7 +789,7 @@ function EditOrder() {
                     </>
                   )}
 
-                  {tanker.activeStep === 6 && (
+{tanker.activeStep === 6 && (
                     <>
                       <Grid container spacing={1}>
                         <Grid item xs={12} sm={4}>
@@ -729,6 +808,24 @@ function EditOrder() {
                   )}
 
                   {tanker.activeStep === 7 && (
+                    <>
+                      <Grid container spacing={1}>
+                        <Grid item xs={12} sm={4}>
+                          <TextField
+                            fullWidth
+                            type="datetime-local"
+                            label=" Date & Time"
+                            name="startingStockDateTime"
+                            InputLabelProps={{
+                              shrink: true,
+                            }}
+                          />
+                        </Grid>
+                      </Grid>
+                    </>
+                  )}
+
+                  {tanker.activeStep === 8 && (
                     <>
                       <Grid container spacing={1}>
                         <Grid item xs={12} sm={4}>

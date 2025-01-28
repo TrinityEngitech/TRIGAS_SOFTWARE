@@ -9,6 +9,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import axios from "axios";
 import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function ViewRole() {
   const { id } = useParams(); // Get the role ID from the URL
@@ -19,7 +20,7 @@ function ViewRole() {
   useEffect(() => {
     const fetchRoleData = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/roles/${id}`);
+        const response = await axiosInstance.get(`/roles/${id}`);
         setRoleData(response.data);  // Set role data in state
       } catch (error) {
         console.error("Error fetching role data:", error);

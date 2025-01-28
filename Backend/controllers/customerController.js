@@ -593,14 +593,15 @@ const prisma = new PrismaClient();
 //   }
 // };
 
+
 exports.createVirtualAccount = async (req, res) => {
   try {
     const {
       customerId,      // UUID received from the frontend
       customerName,    // Name of the customer
-      customerCode,    // Optional Customer code (SAP Code)
+      customerCode = null, // Customer code (assign null if not provided)
       productName,     // Product name (e.g., PROPANE)
-      sapCode,         // Optional SAP Code
+      sapCode = null,  // SAP Code (assign null if not provided)
       supplierId,      // Supplier ID
       supplierName,    // Supplier name (e.g., IOCL)
       supplierLogo,    // Supplier logo
@@ -658,18 +659,18 @@ exports.createVirtualAccount = async (req, res) => {
     const virtualAccountsData = filteredBankDetails
       .filter((detail) => detail.activeStatus) // Only active bank details
       .map((detail) => {
-        // Replace SAP Code in the bank account numbers only if customerCode exists
+        // Replace SAP Code in the bank account numbers only if sapCode is provided
         const replaceSapCode = (text) =>
-          text?.includes("SAP Code") && customerCode
-            ? text.replace("SAP Code", customerCode)
-            : text;
+          text?.includes("SAP Code") && sapCode ? text.replace("SAP Code", sapCode) : text;
 
-        const preNumber = replaceSapCode(detail.preNumber);
-        const middleNumber = replaceSapCode(detail.middleNumber);
-        const postNumber = replaceSapCode(detail.postNumber);
+        const preNumber = replaceSapCode(detail.preNumber) || null;
+        const middleNumber = replaceSapCode(detail.middleNumber) || null;
+        const postNumber = replaceSapCode(detail.postNumber) || null;
 
-        // Construct the virtual account number
-        const virtualAccountNumber = `${preNumber || ""}${middleNumber || ""}${postNumber || ""}`;
+        // Construct the virtual account number, handling null values
+        const virtualAccountNumber = [preNumber, middleNumber, postNumber]
+          .filter((part) => part !== null) // Filter out null parts
+          .join(""); // Join remaining parts to form the account number
 
         return {
           customerId: existingCustomer.id, // Internal customer ID
@@ -678,10 +679,10 @@ exports.createVirtualAccount = async (req, res) => {
           bankName: detail.bankName,
           branchName: detail.branchName,
           ifscCode: detail.ifscCode,
-          accountNumber: virtualAccountNumber, // New virtual account number
+          accountNumber: virtualAccountNumber || null, // Assign null if account number cannot be constructed
           supplierName: supplierName,
           productName: productName,
-          sapCode: sapCode || null, // Allow sapCode to be optional
+          sapCode: sapCode,
           supplierLogo: supplierLogo,
         };
       });
@@ -728,7 +729,11 @@ exports.createVirtualAccount = async (req, res) => {
   
 
 // ----------------------------------------------------------------
-  exports.getAllCustomersDetails = async (req, res) => {
+  
+
+
+
+exports.getAllCustomersDetails = async (req, res) => {
     try {
       // Fetch all customers with their associated data
       const customers = await prisma.customerDetails.findMany({
@@ -821,6 +826,33 @@ exports.createVirtualAccount = async (req, res) => {
     }
   };
 
+
+
+  exports.toggleCustomerStatus = async (req, res) => {
+    try {
+      const customerId = parseInt(req.params.id);
+  
+      const customer = await prisma.customerDetails.findUnique({
+        where: { id: customerId },
+      });
+      if (!customer) {
+        return res.status(404).json({ error: "customer not found" });
+      }
+  
+      // Toggle active status
+      const updatedCustomer = await prisma.customerDetails.update({
+        where: { id: customerId },
+        data: {
+          activeStatus: !customer.activeStatus,
+        },
+      });
+  
+      res.status(200).json(updatedCustomer);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to toggle customer status", details: error.message });
+    }
+  };
+  
   
 
 

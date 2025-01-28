@@ -17,12 +17,18 @@ import {
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
 import axios from "axios";
+import axiosInstance from "../../Authentication/axiosConfig";
 
 function AddEmp() {
   const [formData, setFormData] = useState({
     empName: "",
     empEmail: "",
     empPhone: "",
+    empAadharNumber:"",
+    empAdditionalNumber:"",
+    empAdditionalName:"",
+    joiningDate:"",
+    relievingDate:"",
     teamRole:"",
     teamId: "",
     empRole: "",
@@ -40,8 +46,8 @@ function AddEmp() {
     const fetchData = async () => {
       try {
         const [teamsResponse, rolesResponse] = await Promise.all([
-          axios.get("http://localhost:3000/api/teams"),
-          axios.get("http://localhost:3000/api/roles"),
+          axiosInstance.get("/teams"),
+          axiosInstance.get("/roles"),
         ]);
   
         // Handle teams data
@@ -76,8 +82,10 @@ function AddEmp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("employee data",formData);
     try {
-      const response = await axios.post("http://localhost:3000/api/employees", formData);
+      const response = await axiosInstance.post("/employees", formData);
+      
       console.log("Employee added successfully:", response.data);
       // Optional: Navigate back or show a success message
       navigate("/employeeManagement");
@@ -143,10 +151,68 @@ function AddEmp() {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                label="Aadhar Card"
+                name="empAadharNumber"
+                value={formData.empAadharNumber}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
                 label="Phone Number"
                 name="empPhone"
                 value={formData.empPhone}
                 onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Additional Number"
+                name="empAdditionalNumber"
+                value={formData.empAdditionalNumber}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Additional Number Person Name"
+                name="empAdditionalName"
+                value={formData.empAdditionalName}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Joing Date"
+                name="joiningDate"
+                value={formData.joiningDate}
+                onChange={handleChange}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="date"
+                label="Relieving Date"
+                name="relievingDate"
+                value={formData.relievingDate}
+                onChange={handleChange}
+                InputLabelProps={{
+                  shrink: true,
+                }}
                 required
               />
             </Grid>

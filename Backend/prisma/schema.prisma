@@ -72,18 +72,23 @@ model TeamManagement {
 }
 
 model EmployeeManagement {
-  id              Int       @id @default(autoincrement())
-  createDate      DateTime  @default(now())
-  activeStatus    Boolean
-  empName         String
-  empEmail        String
-  empPhone        String
-  empRole         String
-  teamName        String?   // Optional field, for Team Leader
-  teamLeaderName  String?   // Optional field, for Team Member
-  teamId          Int?      // Optional, if you plan to link employee to the team directly
-  teamRole        String?   // New field to specify the employee's role in the team
-  team            TeamManagement? @relation("TeamEmployees", fields: [teamId], references: [id]) // Establishes relationship with TeamManagement
+  id                Int       @id @default(autoincrement())
+  createDate        DateTime  @default(now())
+  activeStatus      Boolean
+  empName           String
+  empEmail          String
+  empPhone          String
+  empAadharNumber   String    // New field for Aadhar number
+  empAdditionalNumber String? // New optional field for an additional phone number
+  empAdditionalName String?   // New optional field for an additional name
+  empRole           String
+  joiningDate       DateTime  // New field for the employee's joining date
+  relievingDate     DateTime? // New optional field for the employee's relieving date
+  teamName          String?   // Optional field, for Team Leader
+  teamLeaderName    String?   // Optional field, for Team Member
+  teamId            Int?      // Optional, if you plan to link employee to the team directly
+  teamRole          String?   // Field to specify the employee's role in the team
+  team              TeamManagement? @relation("TeamEmployees", fields: [teamId], references: [id]) // Establishes relationship with TeamManagement
 }
 
 
@@ -100,6 +105,7 @@ model Supplier {
   products     Product[]
   contacts     Contact[]
   bankDetails  SupplierBankDetails[] // Relationship to SupplierBankDetails
+  doSoRecords  DoSo[] // Relationship to DoSo table
 }
 
 model Product {
@@ -111,6 +117,7 @@ model Product {
   supplierId   Int
   supplier     Supplier  @relation(fields: [supplierId], references: [id])
   locations    Location[]
+ 
 }
 
 model Location {
@@ -121,6 +128,7 @@ model Location {
   createDate   DateTime  @default(now()) // Added createDate field
   productId    Int
   product      Product   @relation(fields: [productId], references: [id])
+ 
 }
 
 model Contact {
@@ -153,6 +161,26 @@ model SupplierBankDetails {
   supplier     Supplier   @relation(fields: [supplierId], references: [id], onDelete: Cascade)
 }
 
+
+model DoSo {
+  id            Int       @id @default(autoincrement())
+  supplierId    Int
+  supplierName  String    // Added supplier name
+  productName   String    // Added product name
+  loadingPoint  String    // Added loading point
+  doSoNumber    String
+  customerName  String
+  customerCode  String
+  productCode   String
+  activeStatus  Boolean   @default(true) // New field
+  createDate    DateTime  @default(now()) // Added createDate field
+  
+  supplier      Supplier  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+}
+
+
+
+
 model Driver {
   id                  Int       @id @default(autoincrement())
   name                String
@@ -161,6 +189,8 @@ model Driver {
   managerNumber       String?
   drivingLicense      String
   aadharCardNumber    String
+  driverAdditionalNumber String? // New optional field for an additional phone number
+  driverAdditionalName String?   // New optional field for an additional name
   pccNumber           String
   activeStatus        Boolean   @default(true)  // Default to true
   drivingLicenseFile  String?   // Nullable field
@@ -193,6 +223,9 @@ model TankerDetails {
 
   // Relation to TankerDocumentsDetails
   documents           TankerDocumentsDetails[] // One-to-Many relationship
+
+// Add this relation
+  orders              Order[]                 // One-to-Many relationship with Order
 }
 
 
@@ -359,6 +392,10 @@ model CustomerDetails {
   generalDetails      CustomerGeneralDetails[]     // One-to-Many relationship
   sapCodesDetails     CustomerSAPCodesDetails[]    // One-to-Many relationship
   bankDetails         CustomerBankDetails[]        // One-to-Many relationship
+
+  // Add this relation
+  orders              Order[]                 // One-to-Many relationship with Order
+  payments            OrderPayment[]   // One-to-Many relationship with OrderPayment
 }
 
 model CustomerContactDetails {
@@ -429,5 +466,73 @@ model CustomerBankDetails {
   updatedAt       DateTime @updatedAt
 
   customer        CustomerDetails @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id                 Int       @id @default(autoincrement())
+  customerId         Int
+  tankerId           Int?
+  dosoNumber         String?
+  status             String    @default("Pending") // e.g., Pending, Approved, Loading, Completed
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  Customer           CustomerDetails      @relation(fields: [customerId], references: [id])
+  Tanker             TankerDetails?   @relation(fields: [tankerId], references: [id])
+
+
+  payments           OrderPayment[]   // One-to-Many relationship with OrderPayment
+  orderTankers       OrderTanker[]
+
+  // New fields
+  customerName       String
+  supplierName       String
+  supplyLoadingPoint String
+  productName        String
+  productQuantity    Float
+  teamName           String
+  orderCreatedBy     String
+  orderNumber        String    @unique
+  orderDateTime      DateTime
+  orderBookDateTime  DateTime?
+  orderReferenceNumber String?
+  orderRemark        String?
+}
+
+
+model OrderPayment {
+  id               Int       @id @default(autoincrement())
+  orderId          Int
+  paymentSlipImage String?   // URL or path to the uploaded payment slip image
+  paymentDateTime  DateTime? // Date and time of payment
+  paymentAmount    Float     // Amount paid
+  paymentStatus    String    @default("Pending") // Approved/Rejected
+  customerName     String    // Name of the customer
+  customerId       Int       // Customer ID
+  
+  // Relations
+  Order            Order     @relation(fields: [orderId], references: [id])
+  Customer         CustomerDetails @relation(fields: [customerId], references: [id])
+}
+
+
+model OrderTanker {
+  id                     Int       @id @default(autoincrement())
+  orderId                Int?      // Foreign key to Order
+  transporterName        String    // Name of the transporter
+  tankerNumber           String    // Unique identifier for the tanker
+  tankerCapacity         Float     // Capacity of the tanker
+  driverName             String    // Name of the driver
+  tankerGPS              String?   // GPS information or location of the tanker
+  tankerDosoNumber       String    // DO/So number for the tanker
+  reportingDateTime      DateTime? // DateTime when the tanker was reported
+  loadingDateTime        DateTime? // DateTime when the tanker was loaded
+  invoiceWeight          Float?    // Invoice weight for the tanker
+  tankerStatus           String    @default("Pending") // Status: loaded/reject
+  tankerDispatchedDateTime DateTime? // DateTime when the tanker was dispatched
+  orderDeliverDateTime   DateTime? // DateTime when the order was delivered
+  tankerUnloadedDateTime DateTime? // DateTime when the tanker was unloaded
+
+  // Relation to Order
+  Order                  Order?    @relation(fields: [orderId], references: [id])
 }
 
