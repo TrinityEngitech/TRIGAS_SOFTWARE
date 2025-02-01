@@ -23,6 +23,42 @@ import { LuArrowDownUp } from "react-icons/lu";
 import axiosInstance from "../../Authentication/axiosConfig";
 // import AnimatedLogoLoader from "../../component/AnimatedLogoLoader";
 
+// satus
+const getStatusStyles = (status) => {
+  switch (status) {
+    case "Pending":
+      return { bg: "#FFECC8", color: "#E65100", border: "#FF9800" }; // Very Light Orange with Darker Border
+    case "Order Booked":
+      return { bg: "#F1F8E8", color: "#1B5E20", border: "#4CAF50" }; // Very Light Green with Darker Border
+    case "Payment Pending":
+      return { bg: "#F7CFD8", color: "#AE445A", border: "#AE445A" }; // Very Light Red with Darker Border
+    case "Payment Credited":
+      return { bg: "#DAF5FF", color: "#1976D2", border: "#2196F3" }; // Very Light Blue with Darker Border
+    case "Payment Rejected":
+      return { bg: "#FFACAC", color: "#8E1616", border: "#8E1616" }; // Very Light Purple with Darker Border
+    case "Tanker Allocated":
+      return { bg: "#FEFAE0", color: "#FFD65A", border: "#FFD65A" }; // Very Light Brown with Darker Border
+    case "DO/SO Generated":
+      return { bg: "#C5CAE9", color: "#1A237E", border: "#3F51B5" }; // Very Light Indigo with Darker Border
+    case "Tanker Reported":
+      return { bg: "#B2DFDB", color: "#00796B", border: "#009688" }; // Very Light Teal with Darker Border
+    case "Tanker Loaded":
+      return { bg: "#B2DFDB", color: "#00796B", border: "#009688" }; // Very Light Teal with Darker Border
+    case "Tanker Rejected":
+      return { bg: "#FFACAC", color: "#8E1616", border: "#8E1616" }; // Very Light Red with Darker Border
+    case "Tanker Dispatched":
+      return { bg: "#FFEB3B", color: "#F57F17", border: "#FF9800" }; // Very Light Yellow with Darker Border
+    case "Tanker Delivered":
+      return { bg: "#C8E6C9", color: "#388E3C", border: "#4CAF50" }; // Very Light Green with Darker Border
+    case "Tanker Unloaded":
+      return { bg: "#B2DFDB", color: "#004D40", border: "#009688" }; // Very Light Teal with Darker Border
+    default:
+      return { bg: "#CFD8DC", color: "#37474F", border: "#607D8B" }; // Very Light Gray with Darker Border
+  }
+};
+
+
+
 function Order() {
   // State for order data
   const [order, setOrder] = useState([]);
@@ -178,17 +214,17 @@ function Order() {
             />
             <Button
               variant="outlined"
-              color="success"
+              color="primary"
               onClick={() => handleStatusFilter(true)}
             >
-              Active
+              pending order
             </Button>
             <Button
               variant="outlined"
-              color="error"
+              color="primary"
               onClick={() => handleStatusFilter(false)}
             >
-              Inactive
+              complete order
             </Button>
           </Box>
 
@@ -295,8 +331,30 @@ function Order() {
                     <TableCell align="center">
                       {orders.productName || "N/A"}
                     </TableCell>
-                    <TableCell align="center">
-                      {orders.stage || "N/A"}
+                    <TableCell
+                      align="center"
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: "100%",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          backgroundColor: getStatusStyles(orders.status).bg, // Light BG
+                          color: getStatusStyles(orders.status).color,
+                          border: `1px solid ${
+                            getStatusStyles(orders.status).border
+                          }`,
+                          padding: "8px",
+                          borderRadius: "20px",
+                          minWidth: "50px",
+                          textAlign: "center",
+                        }}
+                      >
+                        {orders.status || "N/A"}
+                      </Box>
                     </TableCell>
                     <TableCell align="center">
                       {/* <IconButton

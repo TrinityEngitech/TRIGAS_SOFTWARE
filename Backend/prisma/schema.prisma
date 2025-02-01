@@ -502,6 +502,7 @@ model Order {
 model OrderPayment {
   id               Int       @id @default(autoincrement())
   orderId          Int
+  paymentUTR       Int
   paymentSlipImage String?   // URL or path to the uploaded payment slip image
   paymentDateTime  DateTime? // Date and time of payment
   paymentAmount    Float     // Amount paid
@@ -522,14 +523,16 @@ model OrderTanker {
   tankerNumber           String    // Unique identifier for the tanker
   tankerCapacity         Float     // Capacity of the tanker
   driverName             String    // Name of the driver
+  driverNumber           String?    // Number of the driver
   tankerGPS              String?   // GPS information or location of the tanker
-  tankerDosoNumber       String    // DO/So number for the tanker
+  tankerDosoNumber       String?    // DO/So number for the tanker
   reportingDateTime      DateTime? // DateTime when the tanker was reported
   loadingDateTime        DateTime? // DateTime when the tanker was loaded
+  remarkStatus           String? 
   invoiceWeight          Float?    // Invoice weight for the tanker
   tankerStatus           String    @default("Pending") // Status: loaded/reject
   tankerDispatchedDateTime DateTime? // DateTime when the tanker was dispatched
-  orderDeliverDateTime   DateTime? // DateTime when the order was delivered
+  tankerDeliverDateTime   DateTime? // DateTime when the order was delivered
   tankerUnloadedDateTime DateTime? // DateTime when the tanker was unloaded
 
   // Relation to Order

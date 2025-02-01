@@ -2,118 +2,256 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 
+  // exports.createCustomerDetails = async (req, res) => {
+  //   try {
+  //     const {
+  //       uuid, // Provided by frontend
+  //       companyName,
+  //       email,
+  //       primaryPhoneNumber,
+  //       secondaryPhoneNumber,
+  //       address1,
+  //       address2,
+  //       state,
+  //       district,
+  //       city,
+  //       zipcode,
+  //       associatedSuppliers,
+  //       team,
+  //       typeOfCompany,
+  //       licenseNumber,
+  //       ourCompanies,
+  //       tanNumber,
+  //       gstNumber,
+  //       panNumber,
+  //       licenseValidTill,
+  //       licenseCapacity,
+  //       latitude,
+  //       longitude,
+  //       transporter,
+  //       competitorSupplier,
+  //     } = req.body;
+  
+  //     console.log("UUID:", uuid);
+  //     console.log("Incoming Request Body:", req.body);
+  
+  //     // Validate required fields
+  //     if (
+  //       !uuid ||
+  //       !companyName ||
+  //       !email ||
+  //       !primaryPhoneNumber ||
+  //       !address1 ||
+  //       !state ||
+  //       !district ||
+  //       !city ||
+  //       !zipcode ||
+  //       !typeOfCompany
+  //     ) {
+  //       return res.status(400).json({
+  //         error: 'All required fields, including uuid, must be provided.',
+  //       });
+  //     }
+  
+  //     // Validate the UUID format
+  //     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  //     if (!uuidRegex.test(uuid)) {
+  //       return res.status(400).json({ error: 'Invalid UUID format.' });
+  //     }
+  //     const existingCustomer = await prisma.customerDetails.findUnique({
+  //       where: { uuid },
+  //     });
+  
+  //     if (existingCustomer) {
+  //       return res.status(409).json({
+  //         error: 'A customer with this UUID already exists.',
+  //       });
+  //     }
+  //     // Create a new customer record
+  //     const newCustomer = await prisma.customerDetails.create({
+  //       data: {
+  //         uuid,
+  //         companyName,
+  //         email,
+  //         primaryPhoneNumber,
+  //         secondaryPhoneNumber,
+  //         address1,
+  //         address2,
+  //         state,
+  //         district,
+  //         city,
+  //         zipcode,
+  //         associatedSuppliers: associatedSuppliers ? JSON.stringify(associatedSuppliers) : null, // Store as JSON
+  //         team,
+  //         typeOfCompany,
+  //         licenseNumber,
+  //         ourCompanies: ourCompanies ? JSON.stringify(ourCompanies) : null, // Store as JSON
+  //         tanNumber,
+  //         gstNumber,
+  //         panNumber,
+  //         licenseValidTill: licenseValidTill ? new Date(licenseValidTill) : null,
+  //         licenseCapacity,
+  //         latitude,
+  //         longitude,
+  //         transporter,
+  //         competitorSupplier,
+  //       },
+  //     });
+
+  //     console.log("Saved Customer Record:", newCustomer);
+  
+  //     // Return the created record
+  //     res.status(201).json(newCustomer);
+  //   } catch (error) {
+  //     console.error('Error creating customer details:', error);
+  
+  //     // Check for unique constraint violations
+  //     if (error.code === 'P2002') {
+  //       return res.status(409).json({ error: 'Duplicate entry for a unique field.' });
+  //     }
+  
+  //     // General server error
+  //     res.status(500).json({ error: 'An internal server error occurred.' });
+  //   }
+  // };
+
+
   exports.createCustomerDetails = async (req, res) => {
     try {
-      const {
-        uuid, // Provided by frontend
-        companyName,
-        email,
-        primaryPhoneNumber,
-        secondaryPhoneNumber,
-        address1,
-        address2,
-        state,
-        district,
-        city,
-        zipcode,
-        associatedSuppliers,
-        team,
-        typeOfCompany,
-        licenseNumber,
-        ourCompanies,
-        tanNumber,
-        gstNumber,
-        panNumber,
-        licenseValidTill,
-        licenseCapacity,
-        latitude,
-        longitude,
-        transporter,
-        competitorSupplier,
-      } = req.body;
-  
-      console.log("UUID:", uuid);
-      console.log("Incoming Request Body:", req.body);
-  
-      // Validate required fields
-      if (
-        !uuid ||
-        !companyName ||
-        !email ||
-        !primaryPhoneNumber ||
-        !address1 ||
-        !state ||
-        !district ||
-        !city ||
-        !zipcode ||
-        !typeOfCompany
-      ) {
-        return res.status(400).json({
-          error: 'All required fields, including uuid, must be provided.',
-        });
-      }
-  
-      // Validate the UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(uuid)) {
-        return res.status(400).json({ error: 'Invalid UUID format.' });
-      }
-      const existingCustomer = await prisma.customerDetails.findUnique({
-        where: { uuid },
-      });
-  
-      if (existingCustomer) {
-        return res.status(409).json({
-          error: 'A customer with this UUID already exists.',
-        });
-      }
-      // Create a new customer record
-      const newCustomer = await prisma.customerDetails.create({
-        data: {
-          uuid,
-          companyName,
-          email,
-          primaryPhoneNumber,
-          secondaryPhoneNumber,
-          address1,
-          address2,
-          state,
-          district,
-          city,
-          zipcode,
-          associatedSuppliers: associatedSuppliers ? JSON.stringify(associatedSuppliers) : null, // Store as JSON
-          team,
-          typeOfCompany,
-          licenseNumber,
-          ourCompanies: ourCompanies ? JSON.stringify(ourCompanies) : null, // Store as JSON
-          tanNumber,
-          gstNumber,
-          panNumber,
-          licenseValidTill: licenseValidTill ? new Date(licenseValidTill) : null,
-          licenseCapacity,
-          latitude,
-          longitude,
-          transporter,
-          competitorSupplier,
-        },
-      });
+        const {
+            uuid, // Provided by frontend
+            companyName,
+            email,
+            primaryPhoneNumber,
+            secondaryPhoneNumber,
+            address1,
+            address2,
+            state,
+            district,
+            city,
+            zipcode,
+            associatedSuppliers,
+            team,
+            typeOfCompany,
+            licenseNumber,
+            ourCompanies,
+            tanNumber,
+            gstNumber,
+            panNumber,
+            licenseValidTill,
+            licenseCapacity,
+            latitude,
+            longitude,
+            transporter, // Transporter Name (provided by user)
+            competitorSupplier,
+        } = req.body;
 
-      console.log("Saved Customer Record:", newCustomer);
-  
-      // Return the created record
-      res.status(201).json(newCustomer);
+        console.log("UUID:", uuid);
+        console.log("Incoming Request Body:", req.body);
+
+        // Validate required fields
+        if (
+            !uuid ||
+            !companyName ||
+            !email ||
+            !primaryPhoneNumber ||
+            !address1 ||
+            !state ||
+            !district ||
+            !city ||
+            !zipcode ||
+            !typeOfCompany
+        ) {
+            return res.status(400).json({
+                error: "All required fields, including uuid, must be provided.",
+            });
+        }
+
+        // Validate the UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(uuid)) {
+            return res.status(400).json({ error: "Invalid UUID format." });
+        }
+
+        // Check if the customer already exists
+        const existingCustomer = await prisma.customerDetails.findUnique({
+            where: { uuid },
+        });
+
+        if (existingCustomer) {
+            return res.status(409).json({
+                error: "A customer with this UUID already exists.",
+            });
+        }
+
+        // ✅ Fetch transporter details if transporter name is provided
+        let transporterDetails = null;
+
+        if (transporter) {
+            transporterDetails = await prisma.transporterCompanyDetails.findFirst({
+                where: { transporterName: transporter },
+                include: {
+                    contacts: true, // Include transporter contacts
+                    bankDetails: true, // Include bank details
+                    tankers: true, // Include tankers
+                },
+            });
+
+            if (!transporterDetails) {
+                return res.status(404).json({
+                    error: "Transporter not found. Please check the transporter name.",
+                });
+            }
+        }
+
+        // Create a new customer record
+        const newCustomer = await prisma.customerDetails.create({
+            data: {
+                uuid,
+                companyName,
+                email,
+                primaryPhoneNumber,
+                secondaryPhoneNumber,
+                address1,
+                address2,
+                state,
+                district,
+                city,
+                zipcode,
+                associatedSuppliers: associatedSuppliers ? JSON.stringify(associatedSuppliers) : null, // Store as JSON
+                team,
+                typeOfCompany,
+                licenseNumber,
+                ourCompanies: ourCompanies ? JSON.stringify(ourCompanies) : null, // Store as JSON
+                tanNumber,
+                gstNumber,
+                panNumber,
+                licenseValidTill: licenseValidTill ? new Date(licenseValidTill) : null,
+                licenseCapacity,
+                latitude,
+                longitude,
+                transporter: transporterDetails ? JSON.stringify(transporterDetails) : null, // Store transporter details as JSON
+                competitorSupplier,
+            },
+        });
+
+        console.log("Saved Customer Record:", newCustomer);
+
+        // Return the created record
+        res.status(201).json(newCustomer);
     } catch (error) {
-      console.error('Error creating customer details:', error);
-  
-      // Check for unique constraint violations
-      if (error.code === 'P2002') {
-        return res.status(409).json({ error: 'Duplicate entry for a unique field.' });
-      }
-  
-      // General server error
-      res.status(500).json({ error: 'An internal server error occurred.' });
+        console.error("Error creating customer details:", error);
+
+        // Check for unique constraint violations
+        if (error.code === "P2002") {
+            return res.status(409).json({ error: "Duplicate entry for a unique field." });
+        }
+
+        // General server error
+        res.status(500).json({ error: "An internal server error occurred." });
     }
-  };
+};
+
 
   exports.createCustomerContactDetails = async (req, res) => {
     try {
@@ -267,73 +405,6 @@ const prisma = new PrismaClient();
   
  
 
-  // exports.createCustomerSAPCodesDetails = async (req, res) => {
-  //   try {
-  //     const { customerId, sapCodesDetails } = req.body;
-  
-  //     console.log("Customer ID (UUID):", customerId);
-  //     console.log("SAP Codes Details:", sapCodesDetails);
-  
-  //     // Validate required fields
-  //     if (!customerId || !Array.isArray(sapCodesDetails) || sapCodesDetails.length === 0) {
-  //       return res.status(400).json({
-  //         error: 'customerId and a non-empty sapCodesDetails array are required.',
-  //       });
-  //     }
-  
-  //     // Verify if the Customer with the given UUID exists in the CustomerDetails table
-  //     const existingCustomer = await prisma.customerDetails.findUnique({
-  //       where: { uuid: customerId }, // Use UUID for querying
-  //     });
-  
-  //     if (!existingCustomer) {
-  //       return res.status(404).json({
-  //         error: 'Customer with the given UUID not found.',
-  //       });
-  //     }
-  
-  //     // Validate each SAP code entry
-  //     for (const detail of sapCodesDetails) {
-  //       if (!detail.supplierName || !detail.productName || !detail.sapCode) {
-  //         return res.status(400).json({
-  //           error: 'Each SAP code entry must include supplierName, productName, and sapCode.',
-  //         });
-  //       }
-  //     }
-  
-  //     // Create multiple records for SAP codes
-  //     const newSAPCodes = await prisma.customerSAPCodesDetails.createMany({
-  //       data: sapCodesDetails.map((detail) => ({
-  //         customerId: existingCustomer.id, // Use the internal customer ID after verifying UUID
-  //         supplierName: detail.supplierName,
-  //         productName: detail.productName,
-  //         sapCode: detail.sapCode,
-  //       })),
-  //     });
-  
-  //     // Return the created records count
-  //     res.status(201).json({
-  //       message: 'Customer SAP codes added successfully.',
-  //       count: newSAPCodes.count,
-  //     });
-  //   } catch (error) {
-  //     console.error('Error creating customer SAP codes:', error);
-  
-  //     // Check for unique constraint violations
-  //     if (error.code === 'P2002') {
-  //       return res.status(409).json({
-  //         error: 'Duplicate entry for a unique field.',
-  //       });
-  //     }
-  
-  //     // General server error
-  //     res.status(500).json({
-  //       error: 'An internal server error occurred.',
-  //     });
-  //   }
-  // };
-  
-  
   exports.createCustomerSAPCodesDetails = async (req, res) => {
     try {
       const { customerId, sapCodesDetails } = req.body;
@@ -466,132 +537,6 @@ const prisma = new PrismaClient();
       });
     }
   };
-
-  
-// exports.createVirtualAccount = async (req, res) => {
-//   try {
-//     const {
-//       customerId,      // UUID received from the frontend
-//       customerName,    // Name of the customer
-//       customerCode,    // Customer code (SAP Code)
-//       productName,     // Product name (e.g., PROPANE)
-//       sapCode,         // SAP Code
-//       supplierId,      // Supplier ID
-//       supplierName,    // Supplier name (e.g., IOCL)
-//       supplierLogo,    // Supplier logo
-//     } = req.body;
-
-//     console.log("Account Details:", req.body); // Debug log for incoming data
-
-//     // Validate required fields
-//     if (!customerId || !customerName || !customerCode || !supplierId) {
-//       return res.status(400).json({
-//         error: 'customerId, customerName, customerCode, and supplierId are required.',
-//       });
-//     }
-
-//     // Verify if the Customer with the given UUID exists
-//     const existingCustomer = await prisma.customerDetails.findUnique({
-//       where: { uuid: customerId }, // Query using the customer UUID
-//     });
-
-//     if (!existingCustomer) {
-//       return res.status(404).json({
-//         error: 'Customer with the given UUID not found.',
-//       });
-//     }
-
-//     // Fetch supplier bank details by supplier ID
-//     const supplier = await prisma.supplier.findUnique({
-//       where: { id: supplierId },
-//       include: { bankDetails: true }, // Include related bank details
-//     });
-
-//     if (!supplier) {
-//       return res.status(404).json({
-//         error: 'Supplier with the given ID not found.',
-//       });
-//     }
-
-//     const { bankDetails } = supplier;
-
-//     if (!bankDetails || bankDetails.length === 0) {
-//       return res.status(404).json({
-//         error: `No bank details found for Supplier ID ${supplierId}`,
-//       });
-//     }
-
-//     // Filter bank details based on productName
-//     let filteredBankDetails = bankDetails.filter((detail) => detail.productName === productName);
-
-//     // If no rows match the productName, include all bank details for the supplier
-//     if (filteredBankDetails.length === 0) {
-//       filteredBankDetails = bankDetails;
-//     }
-
-//     // Filter active bank details and create virtual accounts
-//     const virtualAccountsData = filteredBankDetails
-//       .filter((detail) => detail.activeStatus) // Only active bank details
-//       .map((detail) => {
-//         // Replace SAP Code in the bank account numbers
-//         const replaceSapCode = (text) =>
-//           text?.includes("SAP Code") ? text.replace("SAP Code", customerCode) : text;
-
-//         const preNumber = replaceSapCode(detail.preNumber);
-//         const middleNumber = replaceSapCode(detail.middleNumber);
-//         const postNumber = replaceSapCode(detail.postNumber);
-
-//         // Construct the virtual account number
-//         const virtualAccountNumber = `${preNumber}${middleNumber}${postNumber}`;
-
-//         return {
-//           customerId: existingCustomer.id, // Internal customer ID
-//           accountName: customerName,
-//           natureOfAccount: "Virtual Account",
-//           bankName: detail.bankName,
-//           branchName: detail.branchName,
-//           ifscCode: detail.ifscCode,
-//           accountNumber: virtualAccountNumber, // New virtual account number
-//           supplierName: supplierName,
-//           productName: productName,
-//           sapCode: sapCode,
-//           supplierLogo: supplierLogo,
-//         };
-//       });
-
-//     // If no active bank details are found, return an error
-//     if (virtualAccountsData.length === 0) {
-//       return res.status(404).json({
-//         error: `No active bank details to generate virtual accounts for Supplier ID ${supplierId}`,
-//       });
-//     }
-
-//     // Insert data into the database using Prisma ORM
-//     const newVirtualAccounts = await prisma.customerBankDetails.createMany({
-//       data: virtualAccountsData,
-//     });
-
-//     // Return the created virtual account details
-//     res.status(201).json({
-//       message: 'Virtual accounts created successfully.',
-//       data: newVirtualAccounts,
-//     });
-//   } catch (error) {
-//     console.error('Error creating virtual accounts:', error);
-
-//     // Check for unique constraint violations (e.g., duplicate entries)
-//     if (error.code === 'P2002') {
-//       return res.status(409).json({
-//         error: 'Duplicate entry for a unique field.',
-//       });
-//     }
-
-//     // General server error
-//     res.status(500).json({
-//       error: 'An internal server error occurred.',
-//     });
-//   }
-// };
 
 
 exports.createVirtualAccount = async (req, res) => {
@@ -858,6 +803,116 @@ exports.getAllCustomersDetails = async (req, res) => {
 
   
 //   -----------------------------------------------------
+  // exports.updateCustomerDetails = async (req, res) => {
+  //   try {
+  //     const {
+  //       uuid, // Provided by frontend, remains unchanged
+  //       companyName,
+  //       email,
+  //       primaryPhoneNumber,
+  //       secondaryPhoneNumber,
+  //       address1,
+  //       address2,
+  //       state,
+  //       district,
+  //       city,
+  //       zipcode,
+  //       associatedSuppliers,
+  //       team,
+  //       typeOfCompany,
+  //       licenseNumber,
+  //       ourCompanies,
+  //       tanNumber,
+  //       gstNumber,
+  //       panNumber,
+  //       licenseValidTill,
+  //       licenseCapacity,
+  //       latitude,
+  //       longitude,
+  //       transporter,
+  //       competitorSupplier,
+  //     } = req.body;
+  
+  //     console.log("UUID:", uuid);
+  //     console.log(req.body);
+  
+  //     // Validate required fields
+  //     if (
+  //       !uuid ||
+  //       !companyName ||
+  //       !email ||
+  //       !primaryPhoneNumber ||
+  //       !address1 ||
+  //       !state ||
+  //       !district ||
+  //       !city ||
+  //       !zipcode ||
+  //       !typeOfCompany
+  //     ) {
+  //       return res.status(400).json({
+  //         error: 'All required fields, including uuid, must be provided.',
+  //       });
+  //     }
+  
+  //     // Validate the UUID format
+  //     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  //     if (!uuidRegex.test(uuid)) {
+  //       return res.status(400).json({ error: 'Invalid UUID format.' });
+  //     }
+  
+  //     // Find and update the customer record based on uuid
+  //     const updatedCustomer = await prisma.customerDetails.update({
+  //       where: {
+  //         uuid, // Use uuid to find the existing customer
+  //       },
+  //       data: {
+  //         companyName,
+  //         email,
+  //         primaryPhoneNumber,
+  //         secondaryPhoneNumber,
+  //         address1,
+  //         address2,
+  //         state,
+  //         district,
+  //         city,
+  //         zipcode,
+  //         associatedSuppliers,
+  //         team,
+  //         typeOfCompany,
+  //         licenseNumber,
+  //         ourCompanies,
+  //         tanNumber,
+  //         gstNumber,
+  //         panNumber,
+  //         licenseValidTill: licenseValidTill ? new Date(licenseValidTill) : null,
+  //         licenseCapacity,
+  //         latitude,
+  //         longitude,
+  //         transporter,
+  //         competitorSupplier,
+  //       },
+  //     });
+  
+  //     // Return the updated customer record
+  //     res.status(200).json(updatedCustomer);
+  //   } catch (error) {
+  //     console.error('Error updating customer details:', error);
+  
+  //     // Check for unique constraint violations
+  //     if (error.code === 'P2002') {
+  //       return res.status(409).json({ error: 'Duplicate entry for a unique field.' });
+  //     }
+  
+  //     // Handle record not found error
+  //     if (error.code === 'P2025') {
+  //       return res.status(404).json({ error: 'Customer not found.' });
+  //     }
+  
+  //     // General server error
+  //     res.status(500).json({ error: 'An internal server error occurred.' });
+  //   }
+  // };
+
   exports.updateCustomerDetails = async (req, res) => {
     try {
       const {
@@ -915,6 +970,26 @@ exports.getAllCustomersDetails = async (req, res) => {
         return res.status(400).json({ error: 'Invalid UUID format.' });
       }
   
+      // ✅ Fetch transporter details if transporter name is provided
+      let transporterDetails = null;
+
+      if (transporter) {
+          transporterDetails = await prisma.transporterCompanyDetails.findFirst({
+              where: { transporterName: transporter },
+              include: {
+                  contacts: true, // Include transporter contacts
+                  bankDetails: true, // Include bank details
+                  tankers: true, // Include tankers
+              },
+          });
+
+          if (!transporterDetails) {
+              return res.status(404).json({
+                  error: "Transporter not found. Please check the transporter name.",
+              });
+          }
+      }
+  
       // Find and update the customer record based on uuid
       const updatedCustomer = await prisma.customerDetails.update({
         where: {
@@ -943,7 +1018,7 @@ exports.getAllCustomersDetails = async (req, res) => {
           licenseCapacity,
           latitude,
           longitude,
-          transporter,
+          transporter: transporterDetails ? JSON.stringify(transporterDetails) : transporter,
           competitorSupplier,
         },
       });
@@ -967,6 +1042,7 @@ exports.getAllCustomersDetails = async (req, res) => {
       res.status(500).json({ error: 'An internal server error occurred.' });
     }
   };
+
 
 
   exports.updateCustomerContactDetails = async (req, res) => {
@@ -1043,83 +1119,6 @@ exports.getAllCustomersDetails = async (req, res) => {
   };
 
   
-
-
-  // exports.updateCustomerGeneralDetails  = async (req, res) => {
-  //   try {
-  //       const {
-  //         customerId,
-  //         productSegment,
-  //         noOfKiln,
-  //         lengthOfKiln,
-  //         dailyNaturalGasConsumption,
-  //         dailyConsumption,
-  //         hourlyConsumption,
-  //         monthlyConsumption,
-  //         startingStock,
-  //         startingStockDateTime,
-  //         newPurchase,
-  //         newPurchaseDateTime,
-  //         updatedTotalStock,
-  //         remainingHoursOfStock,
-  //       } = req.body;
-    
-  //       console.log("Customer ID:", customerId);
-  //       console.log("General Details:", req.body);
-    
-  //       // Validate required fields
-  //       if (!customerId || !productSegment || noOfKiln === undefined || lengthOfKiln === undefined) {
-  //         return res.status(400).json({
-  //           error: 'customerId, productSegment, noOfKiln, and lengthOfKiln are required.',
-  //         });
-  //       }
-    
-  //       // Delete all existing records for the customerId
-  //       await prisma.customerGeneralDetails.deleteMany({
-  //         where: { customerId },
-  //       });
-    
-  //       // Create new customer general details
-  //       const newGeneralDetails = await prisma.customerGeneralDetails.create({
-  //         data: {
-  //           customerId,
-  //           productSegment,
-  //           noOfKiln,
-  //           lengthOfKiln,
-  //           dailyNaturalGasConsumption: dailyNaturalGasConsumption || null,
-  //           dailyConsumption: dailyConsumption || null,
-  //           hourlyConsumption: hourlyConsumption || null,
-  //           monthlyConsumption: monthlyConsumption || null,
-  //           startingStock: startingStock || null,
-  //           startingStockDateTime: startingStockDateTime || null,
-  //           newPurchase: newPurchase || null,
-  //           newPurchaseDateTime: newPurchaseDateTime || null,
-  //           updatedTotalStock: updatedTotalStock || null,
-  //           remainingHoursOfStock: remainingHoursOfStock || null,
-  //         },
-  //       });
-    
-  //       // Return the newly created record
-  //       res.status(201).json({
-  //         message: 'Customer general details updated successfully.',
-  //         data: newGeneralDetails,
-  //       });
-  //     } catch (error) {
-  //       console.error('Error updating customer general details:', error);
-    
-  //       // Check for unique constraint violations
-  //       if (error.code === 'P2002') {
-  //         return res.status(409).json({
-  //           error: 'Duplicate entry for a unique field.',
-  //         });
-  //       }
-    
-  //       // General server error
-  //       res.status(500).json({
-  //         error: 'An internal server error occurred.',
-  //       });
-  //     }
-  // };
 
   exports.updateCustomerGeneralDetails = async (req, res) => {
     try {

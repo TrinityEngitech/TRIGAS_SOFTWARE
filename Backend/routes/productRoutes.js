@@ -22,7 +22,7 @@ const { authenticate, authorize } = require("../auth/authMiddleware"); // Import
 
 // CRUD routes with authentication
 router.post("/", authenticate, authorize(["Admin"]), productController.createProduct); // Only 'admin' role can create products
-router.get("/", authenticate,authorize(["Admin","Employee"]), productController.getAllProducts); // All authenticated users can access
+router.get("/", authenticate,authorize(["Admin","Employee","Customer"]), productController.getAllProducts); // All authenticated users can access
 router.get("/:id", authenticate, productController.getProductById); // All authenticated users can access
 router.put("/:id", authenticate, authorize(["Admin", "Employee"]), productController.updateProduct); // 'admin' and 'editor' roles can update
 router.delete("/:id", authenticate, authorize(["Admin"]), productController.deleteProduct); // Only 'admin' role can delete

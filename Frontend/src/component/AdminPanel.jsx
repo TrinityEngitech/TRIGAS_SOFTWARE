@@ -60,7 +60,7 @@ import { FaEnvelope, FaBell } from "react-icons/fa";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import Person2Icon from "@mui/icons-material/Person2";
 import StorefrontIcon from "@mui/icons-material/Storefront";
-import PermContactCalendarIcon from '@mui/icons-material/PermContactCalendar';
+import PermContactCalendarIcon from "@mui/icons-material/PermContactCalendar";
 
 // pages
 import Dashboard from "../pages/Dashboard";
@@ -178,6 +178,29 @@ function AdminPanel({ onLogout }) {
   const role = user.role;
 
   // ---------------------------------------------------
+
+  // profile
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    // Fetch user data from localStorage (or API)
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser && storedUser.name) {
+      setProfile(storedUser);
+    }
+  }, []);
+
+  // Function to get initials (First letter of first and last name)
+  const getInitials = (fullName) => {
+    if (!fullName) return "U"; // Default if name is missing
+
+    const words = fullName.split(" "); // Split name into words
+    const firstInitial = words[0]?.charAt(0).toUpperCase() || "";
+    const lastInitial =
+      words.length > 1 ? words[1]?.charAt(0).toUpperCase() : "";
+
+    return firstInitial + lastInitial || "U"; // Fallback to "U" if only one letter exists
+  };
 
   return (
     <Router>
@@ -696,9 +719,14 @@ function AdminPanel({ onLogout }) {
                     aria-expanded={open ? "true" : undefined}
                   >
                     <Avatar
-                      sx={{ width: 32, height: 32, bgcolor: "primary.main" }}
+                      sx={{
+                        width: 35,
+                        height: 35,
+                        bgcolor: "primary.main",
+                        fontSize: "16px",
+                      }}
                     >
-                      T
+                      {profile?.name ? getInitials(profile.name) : "U"}
                     </Avatar>
                   </IconButton>
                 </Tooltip>
@@ -750,7 +778,7 @@ function AdminPanel({ onLogout }) {
                   <ListItemIcon>
                     <PermContactCalendarIcon fontSize="small" />
                   </ListItemIcon>
-                 Registration
+                  Registration
                 </MenuItem>
                 <Divider />
                 <MenuItem>
@@ -785,7 +813,7 @@ function AdminPanel({ onLogout }) {
                 role === "Employee" ||
                 role === "Driver" ||
                 role === "Transporter") && ( */}
-                <Route path="/products" element={<Products />} />
+              <Route path="/products" element={<Products />} />
               {/* )} */}
 
               {/* supplier */}
@@ -917,6 +945,7 @@ function AdminPanel({ onLogout }) {
               <Route path="/order" element={<Order />} />
               <Route path="/addOrder" element={<AddOrder />} />
               <Route path="/editOrder/:id" element={<EditOrder />} />
+              <Route path="/editOrder/:id/update-doso/:tankerId" element={<EditOrder />} />
               <Route path="/orderDetali" element={<OrderDetali />} />
               <Route path="*" element={<h1>Page Not Found</h1>} />
               {/* account setting */}

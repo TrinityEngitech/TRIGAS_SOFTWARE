@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { ArrowBack } from "@mui/icons-material";
@@ -26,9 +26,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 
-
 import axios from "axios";
-
 
 const initialSteps = [
   "Tanker Allocation",
@@ -43,68 +41,506 @@ const initialSteps = [
 ];
 
 function EditOrder() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-  const { id } = useParams(); // Extract the `id` from the route params
+  // ----------- ORDER DETAIL FETCH ----------------------------------
+
   const [currentCustomer, setCurrentCustomer] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  console.log("currentCustomer",currentCustomer);
+  console.log("currentCustomer", currentCustomer);
+  // order book
+  const fetchOrderDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `http://localhost:3000/api/orders/${id}`
+      ); // Use axios to fetch data
+      console.log(response.data);
 
-  const [bookedDateTime, setBookedDateTime] = useState("");
-  
-  
-  
+      setCurrentCustomer(response.data);
+      setSelectedTransporter(response.data.transporterName); // Set selected transporter from order data
+      setSelectedTanker(response.data.tanker);
+      setSelectedTransporter(response.data.transporterName || "");
 
-const fetchOrderDetails = async () => {
-  try {
-    setLoading(true);
-    const response = await axios.get(`http://localhost:3000/api/orders/${id}`); // Use axios to fetch data
-    console.log(response.data);
-
-    setCurrentCustomer(response.data);
-    setLoading(false);
-  } catch (err) {
-    setError(err.response?.data?.message || err.message);
-    setLoading(false);
-  }
-};
-
-// Effect to fetch data when component mounts
-useEffect(() => {
-  if (id) {
-    fetchOrderDetails();
-  }
-}, [id]);
-
-
-const handleDateChange = (event) => {
-  setBookedDateTime(event.target.value);
-};
-
-
-const updateBookedDateTime = async () => {
-  try {
-    const response = await axiosInstance.put(`/orders/${id}`, {
-      bookedDateTime: bookedDateTime, // Only updating bookedDateTime
-    });
-
-    if (response.status === 200) {
-      alert("Order Booked Date & Time updated successfully!");
+      // Set the tanker data properly
+      // setFilteredTankers(response.data.orderTankers || []);// Set selected tanker from order data
+      setLoading(false);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message);
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error updating booked date & time:", error);
-  }
-};
+  };
+  // ----------- ORDER DETAIL FETCH ----------------------------------
+
+  // --------------------- ORDER BOOKED------------------------------------
+  const [bookedDateTime, setBookedDateTime] = useState("");
+  const [initialBookedDateTime, setInitialBookedDateTime] = useState("");
+
+  const handleDateChange = (event) => {
+    setBookedDateTime(event.target.value); // Update state with selected date
+  };
+
+  useEffect(() => {
+    if (currentCustomer?.orderBookDateTime) {
+      const dateTime = new Date(currentCustomer.orderBookDateTime);
+      const localDateTime = dateTime.toISOString().slice(0, 16); // Extract YYYY-MM-DDTHH:MM format
+      setBookedDateTime(localDateTime);
+      setInitialBookedDateTime(localDateTime); // Store original value
+    }
+  }, [currentCustomer]);
+
+  const updateBookedDateTime = async () => {
+    if (!bookedDateTime) {
+      console.error("Error: orderBookDateTime is required.");
+      return;
+    }
+
+    if (bookedDateTime === initialBookedDateTime) {
+      console.log("No changes detected, skipping API call.");
+      handleInitialNext(); // Move to next step without calling API
+      return;
+    }
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/orders/${id}/orderBookDateTime`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderBookDateTime: new Date(bookedDateTime).toISOString(), // Convert to full ISO format
+          }),
+        }
+      );
+
+      // Check if the response is empty
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error:", errorData.message);
+        return;
+      }
+
+      // Parse the response data
+      const data = await response.json();
+      // console.log("Success:", data.message);
+
+      // Check if the response contains a success message
+      if (response.ok) {
+        console.log(data.message); // Success message from backend
+        setCurrentCustomer((prev) => ({
+          ...prev,
+          orderBookDateTime: new Date(bookedDateTime).toISOString(),
+        }));
+        setInitialBookedDateTime(bookedDateTime); // Update stored initial value
+
+        handleInitialNext();
+
+        // You can proceed to the next step here if needed
+      } else {
+        console.error("Failed to update:", data.message);
+      }
+    } catch (error) {
+      console.error("Error updating orderBookDateTime:", error);
+    }
+  };
+  // --------------------- ORDER BOOKED------------------------------------
+
+  // ------------------- PAYMENT DDETALIS--------------------------------
+  const [paymentApproved, setPaymentApproved] = useState(null); // null = not decided, true = approved, false = rejected
+  // const [submittedPaymentDateTime, setSubmittedPaymentDateTime] = useState("");
+  
+
+  useEffect(() => {
+    if (currentCustomer && currentCustomer.payments?.length > 0) {
+      const latestPayment = currentCustomer.payments[0];
+
+      const formattedDateTime = latestPayment.paymentDateTime
+        ? new Date(latestPayment.paymentDateTime).toISOString().slice(0, 16) // Format to 'YYYY-MM-DDTHH:MM'
+        : "";
+    
+      setPaymentDetails((prev) => ({
+        paymentUTR: latestPayment.paymentUTR || "",
+        paymentDateTime: prev.paymentDateTime || formattedDateTime, // Keep existing value if already set
+        paymentAmount: latestPayment.paymentAmount || "",
+        paymentSlipImage: latestPayment.paymentSlipImage || "",
+      }));
+      setPaymentApproved(latestPayment.paymentStatus === "Payment Credited");
+    }
+    setLoading(false); // Set loading to false once data is fetched
+
+  }, [currentCustomer]);
+
+  // payment
+  const [paymentDetails, setPaymentDetails] = useState({
+    paymentUTR: "",
+    paymentDateTime: "",
+    paymentAmount: "",
+    customerName: "", // Default value for now
+    customerId: "", //
+  });
+  useEffect(() => {
+    if (currentCustomer) {
+      setPaymentDetails((prev) => ({
+        ...prev,
+        customerId: currentCustomer.id,
+        customerName: currentCustomer.companyName,
+      }));
+    }
+  }, [currentCustomer]);
+  const [file, setFile] = useState(null);
+
+  const handleInputChange = (e) => {
+    setPaymentDetails({ ...paymentDetails, [e.target.name]: e.target.value });
+  };
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  console.log("Customer ID:", currentCustomer?.customerId);
+  console.log("Customer Name:", currentCustomer?.customerName);
+
+  // const handlePaymentSubmit = async () => {
+  //   handleInitialNext();
+  
+  //   if (!file) {
+  //     setError("Please upload a payment slip image.");
+  //     return;
+  //   }
+  
+  //   const formattedPaymentDateTime = new Date(paymentDetails.paymentDateTime).toISOString();
+  
+  //   const formData = new FormData();
+  //   formData.append("paymentSlipImage", file);
+  //   formData.append("paymentUTR", paymentDetails.paymentUTR);
+  //   formData.append("paymentDateTime", formattedPaymentDateTime);
+  //   formData.append("paymentAmount", paymentDetails.paymentAmount);
+  //   formData.append("customerName", currentCustomer?.customerName || "");
+  //   formData.append("customerId", currentCustomer?.id || "");
+  
+  //   // **Log all data before sending**
+  //   console.log("🚀 Sending Payment Data:");
+  //   console.log("paymentUTR:", paymentDetails.paymentUTR);
+  //   console.log("paymentDateTime:", formattedPaymentDateTime);
+  //   console.log("paymentAmount:", paymentDetails.paymentAmount);
+  //   console.log("customerName:", currentCustomer?.customerName);
+  //   console.log("customerId:", currentCustomer?.id);
+  //   console.log("paymentSlipImage File:", file);
+  
+  //   try {
+  //     const response = await axios.post(
+  //       `http://localhost:3000/api/orders/${id}/payment/create`,
+  //       formData,
+  //       { headers: { "Content-Type": "multipart/form-data" } }
+  //     );
+  
+  //     if (response.status === 200 || response.status === 201) {
+  //       console.log("✅ Payment created successfully!", response.data);
+  
+  //       // Update the state with the uploaded image URL
+  //       setPaymentDetails((prev) => ({
+  //         ...prev,
+  //         paymentSlipImage: response.data.payment.paymentSlipImage, // Update UI
+  //       }));
+  
+  //       const updatedCustomerData = await axios.get(
+  //         `http://localhost:3000/api/orders/${currentCustomer.id}`
+  //       );
+  //       setCurrentCustomer(updatedCustomerData.data);
+  //     } else {
+  //       setError("Failed to submit payment.");
+  //       console.log("❌ Response Error:", response);
+  //     }
+  //   } catch (err) {
+  //     setError("Failed to submit payment.");
+  //     console.error("❌ Error submitting payment:", err);
+  //   }
+  // };
+  
+  
+  const handlePaymentSubmit = async () => {
+    if (!file) {
+      setError("Please upload a payment slip image.");
+      return;
+    }
+  
+    if (!currentCustomer || !currentCustomer.customerId) {
+      setError("Customer ID is missing. Please select a valid customer.");
+      console.error("❌ Missing Customer ID:", currentCustomer);
+      return;
+    }
+  
+    const customerId = currentCustomer.customerId || currentCustomer.id;
+    console.log("✅ Final Customer ID Before Submit:", customerId);
+  
+    const formattedPaymentDateTime = new Date(paymentDetails.paymentDateTime).toISOString();
+  
+    const formData = new FormData();
+    formData.append("paymentSlipImage", file);
+    formData.append("paymentUTR", paymentDetails.paymentUTR);
+    formData.append("paymentDateTime", formattedPaymentDateTime);
+    formData.append("paymentAmount", paymentDetails.paymentAmount);
+    formData.append("customerName", currentCustomer?.customerName || "");
+    formData.append("customerId", customerId);
+  
+    console.log("🚀 Sending Payment Data:");
+    console.log("customerId:", customerId);
+  
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/api/orders/${id}/payment/create`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+  
+      if (response.status === 200 || response.status === 201) {
+        console.log("✅ Payment created successfully!", response.data);
+  
+        // Update state with the new payment data (no need to refetch from API)
+        setPaymentDetails((prev) => ({
+          ...prev,
+          paymentSlipImage: response.data.payment.paymentSlipImage, // Update UI with new image
+        }));
+        
+  
+        // Navigate to next step after submission
+        handleInitialNext();
+  
+      } else {
+        setError("Failed to submit payment.");
+        console.log("❌ Response Error:", response);
+      }
+    } catch (err) {
+      setError("Failed to submit payment.");
+      console.error("❌ Error submitting payment:", err);
+    }
+  };
+  
+  
+
+
+   // -------------------- PAYMENT APPROVED --------------------------------
+   useEffect(() => {
+    if (!currentCustomer || !currentCustomer.id) return;
+  
+    // Instead of fetching by order id directly, you can use payments if needed
+    const latestPayment = currentCustomer.payments?.[0]; // Get the latest payment
+  
+    if (latestPayment) {
+      // Set the payment status based on the latest payment
+      const status = latestPayment.paymentStatus;
+      if (status === "Payment Credited") {
+        setPaymentApproved(true);
+      } else if (status === "Payment Rejected") {
+        setPaymentApproved(false);
+      } else {
+        setPaymentApproved(null); // Ensure it remains null if no status is found
+      }
+      setPaymentProcessed(status !== undefined && status !== null); // Only processed if status exists
+    }
+  }, [currentCustomer]);
+  
+  
+
+ 
+   const [paymentProcessed, setPaymentProcessed] = useState(false); // Track if payment is approved/rejected
 
 
 
+  // payment status update
+  const handlePaymentStatusChange = async (paymentStatus) => {
+    // setLoading(true);
+    // setError(null);
 
+    if (!currentCustomer || !currentCustomer.id) {
+      setError("Customer data is missing.");
+      return;
+    }
+    const orderId = currentCustomer.id; // This is the customer's order ID
+    console.log("Order ID:", orderId);
+
+    try {
+      const response = await axios.patch(
+        `http://localhost:3000/api/orders/${id}/payment/update-status`, // Replace with your backend URL
+        { id: orderId, paymentStatus }
+      );
+
+      // Handle success
+      console.log(response.data);
+      setPaymentApproved(paymentStatus); // Update the payment status in state
+      setPaymentProcessed(true); // Hide buttons after selection
+
+      // You can show a success message or update the UI state accordingly
+    } catch (err) {
+      setError("Failed to update payment status.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // -------------------- PAYMENT APPROVED --------------------------------
+
+  // -------------------- TANKER ALLOCATED --------------------------------
+
+
+  const [selectedTransporter, setSelectedTransporter] = useState("");
+  const [filteredTankers, setFilteredTankers] = useState([]);
+  const [selectedTanker, setSelectedTanker] = useState(null);
+  const [driverNumber, setDriverNumber] = useState("");
+  const [transporter, setTransporter] = useState([]);
+
+  const [orderTankers, setOrderTankers] = useState([]);
+  
+  const fetchOrderTankerDetails = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `http://localhost:3000/api/orders/${id}`
+      );
+
+      if (response.data && response.data.orderTankers) {
+        setOrderTankers(response.data.orderTankers);
+      }
+    } catch (error) {
+      console.error("Error fetching order details:", error);
+      alert("Failed to fetch order details. Please try again.");
+    }
+  };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    if (id) {
+      fetchOrderTankerDetails();
+    }
+  }, [id]);
+
+  console.log("Fetched orderTankers:", orderTankers);
+
+  useEffect(() => {
+    // Function to fetch transporters from the API
+    const fetchSuppliers = async () => {
+      try {
+        const response = await axiosInstance.get("/transporters/");
+        console.log(response.data || []);
+        setTransporter(response.data); // Store transporters data in state
+      } catch (error) {
+        console.error("Error fetching transporters:", error);
+        alert("Failed to fetch transporters. Please try again.");
+      }
+    };
+
+    fetchSuppliers(); // Fetch transporters when component mounts
+  }, []);
+
+  console.log("Transporters:", transporter);
+
+  // Handle Transporter Change
+  const handleTransporterChange = (event) => {
+    const transporterName = event.target.value;
+    setSelectedTransporter(transporterName);
+
+    // Find the transporter's tankers
+    const transporterData = transporter.find(
+      (t) => t.transporterName === transporterName
+    );
+    setFilteredTankers(transporterData ? transporterData.tankers : []);
+    setSelectedTanker(null); // Reset tanker selection
+  };
+
+  // Handle Tanker Change
+  const handleTankerChange = (event) => {
+    const tankerNumber = event.target.value;
+    const selectedTankerData = filteredTankers.find(
+      (t) => t.tankerNumber === tankerNumber
+    );
+    setSelectedTanker(selectedTankerData || null);
+  };
+  // Effect to fetch data when component mounts
+  useEffect(() => {
+    if (id) {
+      fetchOrderDetails();
+    }
+  }, [id]);
+
+  const handleTankerAllocation = async (orderId) => {
+    console.log("orderId:", orderId); // Debugging
+
+    if (!selectedTransporter || !selectedTanker || !driverNumber) {
+      alert(
+        "Please select a transporter, tanker, and provide a driver number!"
+      );
+      return;
+    }
+
+    const requestBody = {
+      transporterName: selectedTransporter,
+      tankerCapacity: selectedTanker.licenseCapacity,
+      tankerNumber: selectedTanker.tankerNumber,
+      driverName: selectedTanker.driverName,
+      driverNumber: driverNumber, // Use user-entered driver number
+      tankerGPS: selectedTanker.tankerGPS || "Not Available",
+    };
+
+    const tankerId = requestBody.tankerNumber;
+
+    console.log("requestBody", requestBody);
+
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/api/orders/${id}/orderTanker/allocation`,
+        requestBody
+      );
+
+      if (response.status === 201) {
+        alert("Tanker allocated successfully!");
+        handleTankerNext(orderId); // Update the activeStep
+        navigate(`/editOrder/${id}/update-doso/${tankerId}`);
+      }
+    } catch (error) {
+      console.error("Error allocating tanker:", error);
+      alert("Failed to allocate tanker. Try again.");
+    }
+  };
+
+
+  
+  // -------------------- TANKER ALLOCATED --------------------------------
+
+  //-------------------- DOSO GENREATE --------------------------------
+  const [dosoNumber, setDosoNumber] = useState("");
+
+  const { tankerId } = useParams();
+
+  const handleTankerDOSO = async (dosoNumber) => {
+    if (!dosoNumber) {
+      alert("Please enter the DO/SO Number!");
+      return;
+    }
+
+    try {
+      const response = await axios.put(
+        // `http://localhost:3000/api/orders/${id}/orderTanker/allocation`,
+        `http://localhost:3000/api/orders/5/orderTanker/update-doso/${tankerId}`,
+        { tankerDosoNumber: dosoNumber }
+      );
+
+      if (response.status === 200) {
+        alert("DO/SO Number updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating DO/SO number:", error);
+      alert("Failed to update DO/SO Number. Try again.");
+    }
+  };
+  //-------------------- DOSO GENREATE --------------------------------
+
+  // ---------------------------- STEPS----------------------------------------------------
   const [activeStep, setActiveStep] = useState(0); // Track active step in the initial stepper
-  const [isTankerSectionVisible, setTankerSectionVisible] = useState(false); // Control tanker section visibility
-  const [tankerList, setTankerList] = useState([
-    { id: 1, activeStep: 0, completed: [] },
-  ]); // Track tanker details with steps 
 
   // Order Detalis step
   const handleInitialNext = () => {
@@ -124,6 +560,11 @@ const updateBookedDateTime = async () => {
     }
   };
 
+  const [isTankerSectionVisible, setTankerSectionVisible] = useState(false); // Control tanker section visibility
+  const [tankerList, setTankerList] = useState([
+    { id: 1, activeStep: 0, completed: [] },
+  ]); // Track tanker details with steps
+
   // Tanker Detalis step
   // Add a new tanker
   const handleAddTanker = () => {
@@ -140,18 +581,24 @@ const updateBookedDateTime = async () => {
     setTankerList(tankerList.filter((tanker) => tanker.id !== id));
   };
 
-  const handleTankerNext = (id) => {
-    setTankerList(
-      tankerList.map((tanker) =>
-        tanker.id === id
+  const handleTankerNext = (tankerId) => {
+    setTankerList((prevTankers) =>
+      prevTankers.map((tanker) =>
+        tanker.id === tankerId
           ? {
               ...tanker,
-              activeStep: tanker.activeStep + 1,
-              completed: [...tanker.completed, tanker.activeStep],
+              activeStep: tanker.activeStep === 8 ? 8 : tanker.activeStep + 1,
             }
           : tanker
       )
     );
+
+    // Reset Order activeStep to 3 when tanker reaches last step (8)
+    if (tankerList.find((t) => t.id === tankerId)?.activeStep === 8) {
+      setActiveStep(3);
+      // Scroll to the top smoothly
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const handleTankerBack = (id) => {
@@ -174,9 +621,8 @@ const updateBookedDateTime = async () => {
       )
     );
   };
+  // ---------------------------- STEPS----------------------------------------------------
 
-  const navigate = useNavigate();
-  
   return (
     <Box p={3}>
       <Box sx={{ display: "flex" }}>
@@ -253,97 +699,102 @@ const updateBookedDateTime = async () => {
           <Grid container spacing={2}>
             {activeStep === 0 && (
               <>
+                {/* <form> */}
                 <Grid container spacing={1}>
                   <Grid item xs={12} sm={3}>
-                  <FormControl fullWidth>
-                    <InputLabel>Customer</InputLabel>
-                    <Select
-                      label="Customer"
-                      value={currentCustomer?.customerName || ""}
-                      disabled
-                    >
-                      <MenuItem value={currentCustomer?.customerName || ""}>
-                        {currentCustomer?.customerName || "Loading..."}
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
+                    <FormControl fullWidth>
+                      <InputLabel>Customer</InputLabel>
+                      <Select
+                        label="Customer"
+                        value={currentCustomer?.customerName || ""}
+                        disabled
+                      >
+                        <MenuItem value={currentCustomer?.customerName || ""}>
+                          {currentCustomer?.customerName || "Loading..."}
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   <Grid item xs={12} sm={3}>
                     <FormControl fullWidth>
-                    <InputLabel>Supplier</InputLabel>
-                    <Select
-                      label="Supplier"
-                      value={currentCustomer?.supplierName || ""}
-                      disabled
-                    >
-                      <MenuItem value={currentCustomer?.supplierName || ""}>
-                        {currentCustomer?.supplierName || "Loading..."}
-                      </MenuItem>
-                    </Select>
-                  </FormControl>                    
+                      <InputLabel>Supplier</InputLabel>
+                      <Select
+                        label="Supplier"
+                        value={currentCustomer?.supplierName || ""}
+                        disabled
+                      >
+                        <MenuItem value={currentCustomer?.supplierName || ""}>
+                          {currentCustomer?.supplierName || "Loading..."}
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   <Grid item xs={12} sm={3}>
                     <FormControl fullWidth>
-                  <InputLabel>Supply Location</InputLabel>
-                  <Select
-                    label="Supply Location"
-                    value={currentCustomer?.supplyLoadingPoint || ""}
-                    disabled
-                  >
-                    <MenuItem value={currentCustomer?.supplyLoadingPoint || ""}>
-                      {currentCustomer?.supplyLoadingPoint || "Loading..."}
-                    </MenuItem>
-                  </Select>
-                </FormControl>
+                      <InputLabel>Supply Location</InputLabel>
+                      <Select
+                        label="Supply Location"
+                        value={currentCustomer?.supplyLoadingPoint || ""}
+                        disabled
+                      >
+                        <MenuItem
+                          value={currentCustomer?.supplyLoadingPoint || ""}
+                        >
+                          {currentCustomer?.supplyLoadingPoint || "Loading..."}
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   <Grid item xs={12} sm={3}>
-                    
-
                     <FormControl fullWidth>
-                    <InputLabel>Product</InputLabel>
-                    <Select
-                      label="Product"
-                      value={currentCustomer?.productName || ""}
+                      <InputLabel>Product</InputLabel>
+                      <Select
+                        label="Product"
+                        value={currentCustomer?.productName || ""}
+                        disabled
+                      >
+                        <MenuItem value={currentCustomer?.productName || ""}>
+                          {currentCustomer?.productName || "Loading..."}
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} sm={3}>
+                    <TextField
+                      fullWidth
+                      label="Quantity(MT)"
+                      name="productQuantity"
+                      value={currentCustomer?.productQuantity || ""}
                       disabled
-                    >
-                      <MenuItem value={currentCustomer?.productName || ""}>
-                        {currentCustomer?.productName || "Loading..."}
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      required
+                    />
                   </Grid>
 
                   <Grid item xs={12} sm={3}>
-                  <TextField
-                    fullWidth
-                    label="Quantity(MT)"
-                    name="productQuantity"
-                    value={currentCustomer?.productQuantity || ""}
-                    disabled
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                    required
-                  />
-
-                  </Grid>
-
-                  <Grid item xs={12} sm={3}>
-                  <TextField
-                    fullWidth
-                    type="datetime-local"
-                    label="Order Date & Time"
-                    name="orderDateTime"
-                    value={currentCustomer?.orderDateTime ? new Date(currentCustomer.orderDateTime).toISOString().slice(0, 16) : ""}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    disabled
-                  />
-
+                    <TextField
+                      fullWidth
+                      type="datetime-local"
+                      label="Order Date & Time"
+                      name="orderDateTime"
+                      value={
+                        currentCustomer?.orderDateTime
+                          ? new Date(currentCustomer.orderDateTime)
+                              .toISOString()
+                              .slice(0, 16)
+                          : ""
+                      }
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      disabled
+                    />
                   </Grid>
 
                   <Grid item xs={12} sm={3}>
@@ -351,14 +802,40 @@ const updateBookedDateTime = async () => {
                       fullWidth
                       type="datetime-local"
                       label="Booked Date & Time"
-                      onChange={handleDateChange}
                       name="orderBookDateTime"
+                      onChange={handleDateChange}
                       InputLabelProps={{
                         shrink: true,
                       }}
+                      value={bookedDateTime} // Set value from state
                     />
                   </Grid>
                 </Grid>
+                {/* Buttons */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mt: 3,
+                    width: "100%",
+                  }}
+                >
+                  <Button
+                    variant="outlined"
+                    disabled={activeStep === 0}
+                    onClick={handleInitialBack}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    type="submit"
+                    onClick={updateBookedDateTime}
+                  >
+                    Continue
+                  </Button>
+                </Box>
+                {/* </form> */}
               </>
             )}
 
@@ -370,31 +847,81 @@ const updateBookedDateTime = async () => {
                       label="Upload File"
                       fullWidth
                       type="file"
+                      name="paymentSlipImage"
                       InputLabelProps={{
                         shrink: true,
                       }}
+                      // value={file ? file.name : ""} // Display file name if it exists
+                      onChange={handleFileChange}
                     />
+                    {file && (
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        <strong>Selected File:</strong> {file.name}
+                      </Typography>
+                    )}
+
+                    {/* If the paymentSlipImage is already present in paymentDetails, show it */}
+                    {paymentDetails.paymentSlipImage && !file && (
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        <strong>Uploaded Image:</strong>{" "}
+                        {paymentDetails.paymentSlipImage}
+                      </Typography>
+                    )}
                   </Grid>
                   <Grid item xs={12} sm={3}>
-                    <TextField label="UTR"
-                    name="UTR Number"
-                     fullWidth type="text" />
+                    <TextField
+                      label="UTR Number"
+                      name="paymentUTR"
+                      fullWidth
+                      type="text"
+                      value={paymentDetails.paymentUTR}
+                      onChange={handleInputChange}
+                    />
                   </Grid>
                   <Grid item xs={12} sm={3}>
                     <TextField
                       label="Payment Date"
                       fullWidth
-                      type="date"
+                      type="datetime-local"
+                      name="paymentDateTime"
+                      value={paymentDetails.paymentDateTime}
                       InputLabelProps={{
                         shrink: true,
                       }}
+                      onChange={handleInputChange}
                     />
                   </Grid>
                   <Grid item xs={12} sm={3}>
-                    <TextField label="Amount" fullWidth type="text" />
+                    <TextField
+                      label="Amount"
+                      value={paymentDetails.paymentAmount}
+                      fullWidth
+                      name="paymentAmount"
+                      type="text"
+                      onChange={handleInputChange}
+                    />
                   </Grid>
-                 
                 </Grid>
+                {/* Buttons */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mt: 3,
+                    width: "100%",
+                  }}
+                >
+                  <Button variant="outlined" onClick={handleInitialBack}>
+                    Back
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    type="submit"
+                    onClick={handlePaymentSubmit}
+                  >
+                    Continue
+                  </Button>
+                </Box>
               </>
             )}
 
@@ -415,46 +942,148 @@ const updateBookedDateTime = async () => {
                         mt: 1,
                       }}
                     >
-                      <img
-                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmz5NwyjG56A7v7-Ksom3O_sbwdy8R4dT4tQ&s"
-                        alt="Uploaded File"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
+                      <a
+                        href={`http://localhost:3000/${paymentDetails.paymentSlipImage}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                      >
+                        <img
+                          src={`http://localhost:3000/${paymentDetails.paymentSlipImage}`}
+                          alt="Payment Slip"
+                          style={{
+                            width: "100px",
+                            height: "100px",
+                            cursor: "pointer",
+                          }}
+                        />
+                      </a>
                     </Box>
                   </Grid>
-
-                  <Grid item xs={12} sm={3}>
+                  <Grid item xs={12} sm={2}>
                     <Typography variant="subtitle1">Payment Date:</Typography>
+
+                    {/* Date */}
                     <Typography variant="body1" sx={{ mt: 1 }}>
-                      16 Jan 2025
+                      {paymentDetails.paymentDateTime
+                        ? new Date(
+                            paymentDetails.paymentDateTime
+                          ).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })
+                        : "Not Available"}
+                    </Typography>
+
+                    {/* Time */}
+                    <Typography variant="body1" sx={{ mt: 0.5 }}>
+                      {paymentDetails.paymentDateTime
+                        ? new Date(
+                            paymentDetails.paymentDateTime
+                          ).toLocaleTimeString("en-IN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            hour12: true,
+                          })
+                        : ""}
                     </Typography>
                   </Grid>
-
-                  <Grid item xs={12} sm={3}>
+                  <Grid item xs={12} sm={2}>
                     <Typography variant="subtitle1">Amount:</Typography>
                     <Typography variant="body1" sx={{ mt: 1 }}>
-                      ₹5,00,000.00
+                      ₹{paymentDetails.paymentAmount.toLocaleString()}
                     </Typography>
                   </Grid>
-
-                  <Grid item xs={12} sm={3}>
-                    <Typography variant="subtitle1">Payment:</Typography>
-                    <Button variant="outlined" color="success">
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      sx={{ marginLeft: "5px" }}
-                    >
-                      Reject
-                    </Button>
+                  <Grid item xs={12} sm={2}>
+                    <Typography variant="subtitle1">UTR Number:</Typography>
+                    <Typography variant="body1" sx={{ mt: 1 }}>
+                      {paymentDetails.paymentUTR}
+                    </Typography>
                   </Grid>
+                  <Grid item xs={12} sm={3}>
+    <Typography variant="subtitle1">Payment:</Typography>
+
+    
+      <>
+        {/* <Button
+          variant="outlined"
+          disabled={loading}
+          onClick={() => handlePaymentStatusChange(true)}
+          color="primary"
+        >
+          {loading ? "Approving..." : "Approve"}
+        </Button>
+
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={() => handlePaymentStatusChange(false)}
+          sx={{ marginLeft: "5px" }}
+          disabled={loading}
+        >
+          {loading ? "Rejecting..." : "Reject"}
+        </Button>
+        {paymentApproved !== null && (
+          <Typography variant="body1" sx={{ marginTop: "10px", fontWeight: "bold" }}>
+            {paymentApproved ? "Payment Credited" : "Payment Rejected"}
+          </Typography>
+        )} */}
+        {!paymentProcessed || paymentApproved === null ? (  // Show buttons only when status is unknown
+  <>
+    <Button
+      variant="outlined"
+      disabled={loading}
+      onClick={() => handlePaymentStatusChange(true)}
+      color="primary"
+    >
+      {loading ? "Approving..." : "Approve"}
+    </Button>
+
+    <Button
+      variant="outlined"
+      color="error"
+      onClick={() => handlePaymentStatusChange(false)}
+      sx={{ marginLeft: "5px" }}
+      disabled={loading}
+    >
+      {loading ? "Rejecting..." : "Reject"}
+    </Button>
+  </>
+) : (
+  <Typography
+    variant="body1"
+    sx={{
+      marginTop: "10px",
+      fontWeight: "bold",
+      color: paymentApproved ? "green" : "red",
+    }}
+  >
+    {paymentApproved ? "Payment Credited ✅" : "Payment Rejected ❌"}
+  </Typography>
+)}      </>
+    
+  </Grid>
                 </Grid>
+                {/* Buttons */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mt: 3,
+                    width: "100%",
+                  }}
+                >
+                  <Button variant="outlined" onClick={handleInitialBack}>
+                    Back
+                  </Button>
+                  <Button variant="outlined"
+                  disabled={!paymentApproved} // Initially disabled, enabled only if payment is credited
+                   onClick={handleInitialNext}>
+                    Go to Tanker Details
+                  </Button>
+                </Box>
               </>
             )}
 
@@ -469,26 +1098,25 @@ const updateBookedDateTime = async () => {
                     <TextField label="Remark" fullWidth type="text" />
                   </Grid>
                 </Grid>
+                {/* Buttons */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mt: 3,
+                    width: "100%",
+                  }}
+                >
+                  <Button variant="outlined" onClick={handleInitialBack}>
+                    Back
+                  </Button>
+                  <Button variant="outlined" onClick={handleInitialNext}>
+                    Finish
+                  </Button>
+                </Box>
               </>
             )}
           </Grid>
-
-          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-            <Button
-              variant="outlined"
-              disabled={activeStep === 0}
-              onClick={handleInitialBack}
-            >
-              Back
-            </Button>
-            <Button variant="outlined" onClick={handleInitialNext}>
-              {activeStep === 2
-                ? "Go to Tanker Details"
-                : activeStep === 3
-                ? "Finish"
-                : "Continue"}
-            </Button>
-          </Box>
         </Box>
       </Box>
       {/* Tanker Details Content  */}
@@ -627,67 +1255,139 @@ const updateBookedDateTime = async () => {
                     }
                   </Typography>
                   {tanker.activeStep === 0 && (
-                    <>
-                      <Grid container spacing={1}>
-                        <Grid item xs={12} sm={3}>
-                          <FormControl fullWidth>
-                            <InputLabel>Transpoter</InputLabel>
-                            <Select label="Transpoter" name="" required>
-                              <MenuItem value="Transpoter 1">
-                                Transpoter 1
-                              </MenuItem>
-                              <MenuItem value="Transpoter 2">
-                                Transpoter 2
-                              </MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
+                   <>
+                   <Grid container spacing={1}>
+                     {/* Transporter Selection */}
+                     <Grid item xs={12} sm={4}>
+                       <FormControl fullWidth>
+                         <InputLabel>Transporter</InputLabel>
+                         <Select
+                           label="Transporter"
+                           name="transporterName"
+                           value={selectedTransporter || currentCustomer?.orderTankers?.[0]?.transporterName || ""}
+                           onChange={handleTransporterChange}
+                           required
+                         >
+                           {transporter.map((t) => (
+                             <MenuItem key={t.id} value={t.transporterName}>
+                               {t.transporterName}
+                             </MenuItem>
+                           ))}
+                         </Select>
+                       </FormControl>
+                     </Grid>
+                 
+                     {/* Tanker Number Selection */}
+                     <Grid item xs={12} sm={4}>
+                       <FormControl fullWidth>
+                         <InputLabel>Tanker Number</InputLabel>
+                         <Select
+                           label="Tanker Number"
+                           name="tankerNumber"
+                           value={selectedTanker?.tankerNumber || currentCustomer?.orderTankers?.[0]?.tankerNumber || ""}
+                           onChange={handleTankerChange}
+                           required
+                         >
+                           {filteredTankers.length > 0 ? (
+                             filteredTankers.map((tanker) => (
+                               <MenuItem key={tanker.id} value={tanker.tankerNumber}>
+                                 {tanker.tankerNumber}
+                               </MenuItem>
+                             ))
+                           ) : (
+                             <MenuItem disabled>No tankers available</MenuItem>
+                           )}
+                         </Select>
+                       </FormControl>
+                     </Grid>
+                 
+                     {/* Tanker Capacity */}
+                     <Grid item xs={12} sm={4}>
+                       <FormControl fullWidth>
+                         <InputLabel>Tanker Capacity</InputLabel>
+                         <Select
+                           label="Tanker Capacity"
+                           name="tankerCapacity"
+                           value={selectedTanker?.licenseCapacity || currentCustomer?.orderTankers?.[0]?.tankerCapacity || ""}
+                           required
+                           disabled={!selectedTanker}
+                         >
+                           {selectedTanker || currentCustomer?.orderTankers?.length ? (
+                             <MenuItem value={selectedTanker?.licenseCapacity || currentCustomer?.orderTankers?.[0]?.tankerCapacity}>
+                               {selectedTanker?.licenseCapacity || currentCustomer?.orderTankers?.[0]?.tankerCapacity}
+                             </MenuItem>
+                           ) : (
+                             <MenuItem disabled>Select a tanker first</MenuItem>
+                           )}
+                         </Select>
+                       </FormControl>
+                     </Grid>
+                 
+                     {/* Driver Name */}
+                     <Grid item xs={12} sm={4}>
+                       <TextField
+                         fullWidth
+                         label="Driver Name"
+                         name="driverName"
+                         value={selectedTanker?.driverName || currentCustomer?.orderTankers?.[0]?.driverName || ""}
+                         required
+                         InputProps={{ readOnly: true }}
+                         helperText={selectedTanker ? "" : "Select a tanker first"}
+                         error={!selectedTanker}
+                       />
+                     </Grid>
+                 
+                     {/* Driver Number */}
+                     <Grid item xs={12} sm={4}>
+                       <TextField
+                         fullWidth
+                         label="Driver Number"
+                         name="driverNumber"
+                         value={driverNumber || currentCustomer?.orderTankers?.[0]?.driverNumber || ""}
+                         onChange={(e) => setDriverNumber(e.target.value)}
+                         required
+                       />
+                     </Grid>
+                   </Grid>
+                 
+                   <FormControlLabel
+                     value="end"
+                     control={<Checkbox />}
+                     label="Tanker GPS Tracking"
+                     labelPlacement="end"
+                   />
+                 
+                   {/* Buttons */}
+                   <Box
+                     sx={{
+                       display: "flex",
+                       justifyContent: "space-between",
+                       mt: 3,
+                     }}
+                   >
+                     <Button variant="outlined" disabled>
+                       Back
+                     </Button>
+                 
+                     <Button
+                       variant="outlined"
+                       type="button"
+                       onClick={(e) => {
+                         e.preventDefault();
+                         handleTankerAllocation(
+                           selectedTanker?.id || currentCustomer?.orderTankers?.[0]?.id,
+                           selectedTanker?.tankerNumber || currentCustomer?.orderTankers?.[0]?.tankerNumber
+                         );
+                       }}
+                       disabled={!selectedTransporter || !selectedTanker || !driverNumber}
+                     >
+                       Continue
+                     </Button>
+                   </Box>
+                 </>
+                 
+                  )}  
 
-                        <Grid item xs={12} sm={3}>
-                          <FormControl fullWidth>
-                            <InputLabel>Tanker Number</InputLabel>
-                            <Select label="Tanker Number" name="" required>
-                              <MenuItem value="Tanker Number 1">
-                                Tanker Number 1
-                              </MenuItem>
-                              <MenuItem value="Tanker Number 2">
-                                Tanker Number 2
-                              </MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-
-                        <Grid item xs={12} sm={3}>
-                          <FormControl fullWidth>
-                            <InputLabel>Tanker Capacity</InputLabel>
-                            <Select label="Tanker Capacity" name="" required>
-                              <MenuItem value="Tanker Capacity 1">
-                                Tanker Capacity 1
-                              </MenuItem>
-                              <MenuItem value="Tanker Capacity 2">
-                                Tanker Capacity 2
-                              </MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-
-                        <Grid item xs={12} sm={3}>
-                          <TextField
-                            fullWidth
-                            label="Driver Number"
-                            name=""
-                            required
-                          />
-                        </Grid>
-                      </Grid>
-                      <FormControlLabel
-                        value="end"
-                        control={<Checkbox />}
-                        label="Tanker GPS Tracking"
-                        labelPlacement="end"
-                      />
-                    </>
-                  )}
                   {tanker.activeStep === 1 && (
                     <>
                       <Grid container spacing={1}>
@@ -695,11 +1395,37 @@ const updateBookedDateTime = async () => {
                           <TextField
                             fullWidth
                             label="DO/SO Number"
-                            name=""
+                            name="dosoNumber"
+                            value={dosoNumber}
+                            onChange={(e) => setDosoNumber(e.target.value)}
                             required
                           />
                         </Grid>
                       </Grid>
+
+                      {/* Buttons */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          mt: 3,
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerBack(tanker.id)}
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() =>
+                            handleTankerDOSO(tanker.id, dosoNumber)
+                          }
+                        >
+                          Continue
+                        </Button>
+                      </Box>
                     </>
                   )}
 
@@ -718,8 +1444,30 @@ const updateBookedDateTime = async () => {
                           />
                         </Grid>
                       </Grid>
+                      {/*  Buttons */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          mt: 3,
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerBack(tanker.id)}
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerNext(tanker.id)}
+                        >
+                          Continue
+                        </Button>
+                      </Box>
                     </>
                   )}
+
                   {tanker.activeStep === 3 && (
                     <>
                       <Grid container spacing={1}>
@@ -735,8 +1483,30 @@ const updateBookedDateTime = async () => {
                           />
                         </Grid>
                       </Grid>
+                      {/*  Buttons */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          mt: 3,
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerBack(tanker.id)}
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerNext(tanker.id)}
+                        >
+                          Continue
+                        </Button>
+                      </Box>
                     </>
                   )}
+
                   {tanker.activeStep === 4 && (
                     <>
                       <Grid container spacing={1}>
@@ -761,12 +1531,34 @@ const updateBookedDateTime = async () => {
                           </Button>
                         </Grid>
                       </Grid>
+                      {/*  Buttons */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          mt: 3,
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerBack(tanker.id)}
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerNext(tanker.id)}
+                        >
+                          Continue
+                        </Button>
+                      </Box>
                     </>
                   )}
+
                   {tanker.activeStep === 5 && (
                     <>
                       <Grid container spacing={1}>
-                      <Grid item xs={12} sm={4}>
+                        <Grid item xs={12} sm={4}>
                           <TextField
                             fullWidth
                             label="Invoice Weight(Tons)"
@@ -786,10 +1578,31 @@ const updateBookedDateTime = async () => {
                           />
                         </Grid>
                       </Grid>
+                      {/*  Buttons */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          mt: 3,
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerBack(tanker.id)}
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerNext(tanker.id)}
+                        >
+                          Continue
+                        </Button>
+                      </Box>
                     </>
                   )}
 
-{tanker.activeStep === 6 && (
+                  {tanker.activeStep === 6 && (
                     <>
                       <Grid container spacing={1}>
                         <Grid item xs={12} sm={4}>
@@ -804,6 +1617,27 @@ const updateBookedDateTime = async () => {
                           />
                         </Grid>
                       </Grid>
+                      {/*  Buttons */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          mt: 3,
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerBack(tanker.id)}
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerNext(tanker.id)}
+                        >
+                          Continue
+                        </Button>
+                      </Box>
                     </>
                   )}
 
@@ -822,6 +1656,27 @@ const updateBookedDateTime = async () => {
                           />
                         </Grid>
                       </Grid>
+                      {/*  Buttons */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          mt: 3,
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerBack(tanker.id)}
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerNext(tanker.id)}
+                        >
+                          Continue
+                        </Button>
+                      </Box>
                     </>
                   )}
 
@@ -840,33 +1695,29 @@ const updateBookedDateTime = async () => {
                           />
                         </Grid>
                       </Grid>
+                      {/*  Buttons */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          mt: 3,
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerBack(tanker.id)}
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleTankerNext(tanker.id)}
+                        >
+                          Finish
+                        </Button>
+                      </Box>
                     </>
                   )}
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      mt: 3,
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      disabled={tanker.activeStep === 0}
-                      onClick={() => handleTankerBack(tanker.id)}
-                    >
-                      Back
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      onClick={() => handleTankerNext(tanker.id)}
-                      disabled={tanker.activeStep === initialSteps.length - 1}
-                    >
-                      {tanker.activeStep === initialSteps.length - 1
-                        ? "Finish"
-                        : "Continue"}
-                    </Button>
-                  </Box>
                 </Box>
               </AccordionDetails>
             </Accordion>
